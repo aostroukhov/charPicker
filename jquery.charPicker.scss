@@ -1,0 +1,378 @@
+// ============================================================
+// jquery.charPicker.scss  v1.2.0
+// jQuery plugin: вставка спецсимволов и эмодзи в input/textarea
+//
+// Именование классов: BEM (Block__Element--Modifier)
+//   Блок:      .cp
+//   Элемент:   .jcp__trigger  .jcp__popup  .jcp__tab  .jcp__char  …
+//   Модификатор: .jcp__trigger--active  .jcp__tab--active  .jcp__char--sym  …
+// ============================================================
+
+
+// ── Переменные ────────────────────────────────────────────────
+$cp-popup-width        : 320px       !default;
+$cp-popup-body-height  : 240px       !default;
+$cp-char-size          : 34px        !default;
+$cp-char-font-size     : 20px        !default;
+$cp-char-font-size-sym : 16px        !default;  // модификатор --sym
+$cp-trigger-size       : 2.2em       !default;
+$cp-border-radius      : 10px        !default;
+$cp-border-radius-sm   : 6px         !default;
+$cp-z-popup            : 9999        !default;
+$cp-z-tooltip          : 99999       !default;
+
+// Цветовая схема
+$cp-color-bg           : #fff        !default;
+$cp-color-bg-panel     : #f8f9fb     !default;
+$cp-color-bg-trigger   : #f4f6f8     !default;
+$cp-color-bg-trigger-h : #e8edf2     !default;
+$cp-color-bg-trigger-a : #dbe8f5     !default;  // модификатор --active
+$cp-color-bg-char-h    : #e8f0fb     !default;
+$cp-color-bg-char-act  : #d0e4f5     !default;
+
+$cp-color-border       : #c8cfd8     !default;
+$cp-color-border-panel : #e8ecf0     !default;
+$cp-color-border-focus : #5b9bd5     !default;
+
+$cp-color-accent       : #5b9bd5     !default;
+$cp-color-accent-dark  : #2d6da8     !default;
+
+$cp-color-text         : #333        !default;
+$cp-color-text-tab     : #666        !default;
+$cp-color-text-muted   : #999        !default;
+$cp-color-text-empty   : #aaa        !default;
+$cp-color-text-trigger : #555        !default;
+
+$cp-color-tooltip-bg   : #1a2233     !default;
+$cp-color-tooltip-text : #fff        !default;
+
+$cp-font-sym : 'Georgia', 'Times New Roman', serif !default;
+
+// Тени
+$cp-shadow-popup     : 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08) !default;
+$cp-shadow-trigger-h : 0 1px 4px rgba(0, 0, 0, 0.12) !default;
+
+
+// ── Миксины ───────────────────────────────────────────────────
+
+/// Скрыть нативный скроллбар во всех браузерах
+@mixin hide-scrollbar {
+  scrollbar-width: none;             // Firefox
+  &::-webkit-scrollbar { display: none; } // Chrome / Safari / Edge
+}
+
+/// Тонкий стилизованный скроллбар
+@mixin thin-scrollbar($thumb: #d0d8e4, $track: transparent) {
+  scrollbar-width: thin;
+  scrollbar-color: $thumb $track;   // Firefox: «ползунок дорожка»
+
+  &::-webkit-scrollbar        { width: 4px; }
+  &::-webkit-scrollbar-thumb  { background: $thumb; border-radius: 2px; }
+  &::-webkit-scrollbar-track  { background: $track; }
+}
+
+/// Запрет выделения текста (необходим для кнопок и вкладок)
+@mixin no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
+// ================================================================
+// БЛОК: .cp
+// Корневая обёртка, которая оборачивает целевой <input>/<textarea>
+// и кнопку-триггер. Превращает их в единый inline-flex контейнер.
+// ================================================================
+.jcp {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+
+  // Нативный элемент формы внутри блока .cp.
+  // Не является самостоятельным BEM-элементом — это сторонний тег,
+  // который мы просто «растягиваем» на всю доступную ширину.
+  > input,
+  > textarea {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+
+  // ── Элемент: кнопка-триггер ────────────────────────────────
+  // .jcp__trigger — кнопка с иконкой, открывающая попап.
+  // Рендерится JS-плагином и добавляется справа от поля ввода.
+  &__trigger {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $cp-trigger-size;
+    min-height: $cp-trigger-size;
+    margin-left: 4px;
+    padding: 0;
+    border: 1px solid $cp-color-border;
+    border-radius: $cp-border-radius-sm;
+    background: $cp-color-bg-trigger;
+    cursor: pointer;
+    font-size: 1.1em;
+    line-height: 1;
+    color: $cp-color-text-trigger;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    @include no-select;
+
+    // Встроенная SVG-иконка не должна перехватывать клики
+    svg { pointer-events: none; }
+
+    &:hover {
+      background: $cp-color-bg-trigger-h;
+      border-color: #9aafc2;
+      box-shadow: $cp-shadow-trigger-h;
+    }
+
+    // Модификатор: попап открыт → кнопка подсвечена
+    &--active {
+      background: $cp-color-bg-trigger-a;
+      border-color: $cp-color-accent;
+      color: $cp-color-accent-dark;
+    }
+  }
+
+
+  // ── Элемент: всплывающий попап ─────────────────────────────
+  // .jcp__popup — контейнер пикера. Позиционируется абсолютно
+  // относительно блока .cp, direction управляется модификаторами.
+  &__popup {
+    position: absolute;
+    z-index: $cp-z-popup;
+    width: $cp-popup-width;
+    background: $cp-color-bg;
+    border: 1px solid #cdd5de;
+    border-radius: $cp-border-radius;
+    box-shadow: $cp-shadow-popup;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: cp-fadein 0.12s ease;
+
+    // Модификаторы позиционирования (вычисляются JS в _positionPopup)
+    &--pos-bottom { top: calc(100% + 6px); left: 0; }
+    &--pos-top    { bottom: calc(100% + 6px); left: 0; }
+    &--pos-right  { right: 0; left: auto; } // горизонтальное смещение к правому краю
+  }
+
+
+  // ── Элемент: обёртка строки поиска ─────────────────────────
+  // .jcp__search — панель с полем ввода в верхней части попапа.
+  &__search {
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid $cp-color-border-panel;
+    background: $cp-color-bg-panel;
+  }
+
+  // ── Элемент: поле ввода поискового запроса ─────────────────
+  // .jcp__search-input — <input type="search"> внутри .jcp__search.
+  // Отдельный элемент (не модификатор), так как имеет
+  // собственные состояния :focus и ::placeholder.
+  &__search-input {
+    // SVG-иконка лупы закодирована inline, чтобы не зависеть от внешних файлов
+    $_search-icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E";
+
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 10px 6px 30px;    // 30px слева — место под иконку лупы
+    border: 1px solid $cp-color-border;
+    border-radius: $cp-border-radius-sm;
+    font-size: 13px;
+    background: $cp-color-bg url(#{$_search-icon}) no-repeat 8px center;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    color: $cp-color-text;
+    appearance: none;              // убрать нативный крестик «сброс» в Chrome
+
+    &:focus {
+      border-color: $cp-color-border-focus;
+      box-shadow: 0 0 0 2px rgba($cp-color-accent, 0.2);
+    }
+
+    &::placeholder { color: $cp-color-text-empty; }
+  }
+
+
+  // ── Элемент: панель вкладок групп ──────────────────────────
+  // .jcp__tabs — горизонтальная полоса с иконками-группами.
+  // Скроллится горизонтально при переполнении, скроллбар скрыт.
+  &__tabs {
+    display: flex;
+    overflow-x: auto;
+    @include hide-scrollbar;
+    background: $cp-color-bg-panel;
+    border-bottom: 1px solid $cp-color-border-panel;
+    padding: 0 6px;
+    gap: 2px;
+  }
+
+  // ── Элемент: одна вкладка группы ───────────────────────────
+  // .jcp__tab — кликабельная иконка категории символов.
+  &__tab {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent; // индикатор активности
+    color: $cp-color-text-tab;
+    white-space: nowrap;
+    transition: color 0.12s, border-color 0.12s;
+    @include no-select;
+
+    &:hover { color: $cp-color-text; }
+
+    // Модификатор: текущая (выбранная) вкладка
+    &--active {
+      border-bottom-color: $cp-color-accent;
+      color: $cp-color-accent-dark;
+    }
+  }
+
+
+  // ── Элемент: прокручиваемое тело попапа ────────────────────
+  // .jcp__body — область с сетками символов и заголовками секций.
+  &__body {
+    overflow-y: auto;
+    max-height: $cp-popup-body-height;
+    padding: 8px 6px;
+    min-height: 60px;               // предотвращает «схлопывание» при загрузке
+    @include thin-scrollbar;
+  }
+
+
+  // ── Элемент: заголовок секции внутри body ──────────────────
+  // .jcp__section-title — подпись над группой символов
+  // («Недавние», «Смайлы», «Результаты: 12» и т.д.).
+  &__section-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $cp-color-text-muted;
+    padding: 4px 4px 2px;
+    margin-top: 4px;
+
+    // Первый заголовок не нуждается в отступе сверху
+    &:first-child { margin-top: 0; }
+  }
+
+
+  // ── Элемент: сетка символов ────────────────────────────────
+  // .jcp__grid — flex-обёртка для набора .jcp__char.
+  &__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    margin-bottom: 4px;
+  }
+
+
+  // ── Элемент: один символ в сетке ───────────────────────────
+  // .jcp__char — кликабельная ячейка с одним символом/эмодзи.
+  &__char {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $cp-char-size;
+    height: $cp-char-size;
+    font-size: $cp-char-font-size;
+    border-radius: $cp-border-radius-sm;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.1s, transform 0.08s;
+    @include no-select;
+    line-height: 1;
+    box-sizing: border-box;
+    position: relative;             // нужен для z-index при hover-увеличении
+
+    &:hover {
+      background: $cp-color-bg-char-h;
+      border-color: #c0d4ef;
+      transform: scale(1.18);       // лёгкое увеличение для лучшей видимости
+      z-index: 1;                   // поверх соседних символов
+    }
+
+    &:active {
+      transform: scale(0.95);
+      background: $cp-color-bg-char-act;
+    }
+
+    // Модификатор: не-эмодзи символ (типографика, математика, валюты…)
+    // Уменьшаем размер шрифта и переключаемся на serif-гарнитуру,
+    // чтобы символы типа «→», «©», «€» отображались корректно
+    // без зависимости от системных эмодзи-шрифтов.
+    &--sym {
+      font-size: $cp-char-font-size-sym;
+      font-family: $cp-font-sym;
+    }
+  }
+
+
+  // ── Элемент: тултип с названием символа ────────────────────
+  // .jcp__tooltip — всплывает при наведении на .jcp__char.
+  // fixed-позиционирование, координаты проставляет JS.
+  &__tooltip {
+    position: fixed;
+    background: $cp-color-tooltip-bg;
+    color: $cp-color-tooltip-text;
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    pointer-events: none;           // не мешает hover на символах
+    z-index: $cp-z-tooltip;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.1s;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    // Модификатор: тултип виден (класс добавляется JS при mouseover)
+    &--visible { opacity: 1; }
+  }
+
+
+  // ── Элемент: заглушка «ничего не найдено» ──────────────────
+  // .jcp__empty — центрированный текст, отображается когда
+  // поиск не дал результатов или история «Недавних» пуста.
+  &__empty {
+    text-align: center;
+    color: $cp-color-text-empty;
+    font-size: 13px;
+    padding: 20px 10px;
+  }
+
+
+  // ── Элемент: подсказка о конвертации раскладки ─────────────
+  // .jcp__layout-hint — появляется под заголовком результатов,
+  // когда поиск сработал благодаря автоматической конвертации
+  // EN→RU или RU→EN (неправильная раскладка клавиатуры).
+  // Намеренно небольшой размер: это вспомогательная информация,
+  // она не должна перетягивать внимание с результатов.
+  &__layout-hint {
+    font-size: 10px;
+    color: $cp-color-accent-dark;
+    background: rgba($cp-color-accent, 0.08);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin: 0 0 4px;
+    opacity: 0.85;
+  }
+}
+
+
+// ── Анимация появления попапа ─────────────────────────────────
+// Вынесена за пределы блока .cp, так как @keyframes в BEM
+// не являются частью блока — это глобальный ресурс анимации.
+// Префикс cp- сохраняем для изоляции в namespace плагина.
+@keyframes cp-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

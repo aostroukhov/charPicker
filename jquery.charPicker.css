@@ -1,0 +1,295 @@
+/* ============================================================
+   jquery.charPicker.css  v1.2.0
+   Compiled from jquery.charPicker.scss
+   Именование: BEM — .jcp__element  .jcp__element--modifier
+   ============================================================ */
+
+
+/* ================================================================
+   БЛОК: .cp
+   Корневая обёртка вокруг <input>/<textarea> и кнопки-триггера.
+   ================================================================ */
+.jcp {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Нативный элемент формы внутри блока — растягиваем на всю ширину */
+.jcp > input,
+.jcp > textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+
+/* ── Элемент: кнопка-триггер ──────────────────────────────────── */
+.jcp__trigger {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2em;
+  min-height: 2.2em;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid #c8cfd8;
+  border-radius: 6px;
+  background: #f4f6f8;
+  cursor: pointer;
+  font-size: 1.1em;
+  line-height: 1;
+  color: #555;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Встроенная SVG-иконка не должна перехватывать клики */
+.jcp__trigger svg {
+  pointer-events: none;
+}
+
+.jcp__trigger:hover {
+  background: #e8edf2;
+  border-color: #9aafc2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Модификатор: попап открыт → кнопка подсвечена */
+.jcp__trigger--active {
+  background: #dbe8f5;
+  border-color: #5b9bd5;
+  color: #2d6da8;
+}
+
+
+/* ── Элемент: всплывающий попап ───────────────────────────────── */
+.jcp__popup {
+  position: absolute;
+  z-index: 9999;
+  width: 320px;
+  background: #fff;
+  border: 1px solid #cdd5de;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: cp-fadein 0.12s ease;
+}
+
+/* Модификаторы позиционирования (вычисляются JS в _positionPopup) */
+.jcp__popup--pos-bottom { top: calc(100% + 6px); left: 0; }
+.jcp__popup--pos-top    { bottom: calc(100% + 6px); left: 0; }
+.jcp__popup--pos-right  { right: 0; left: auto; }
+
+/* Анимация появления (глобальная, префикс cp- для изоляции) */
+@keyframes cp-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── Элемент: обёртка строки поиска ──────────────────────────── */
+.jcp__search {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid #e8ecf0;
+  background: #f8f9fb;
+}
+
+/* ── Элемент: поле ввода поискового запроса ───────────────────── */
+/* Отдельный элемент (не модификатор), т.к. имеет               */
+/* собственные состояния :focus и ::placeholder.                 */
+.jcp__search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px 6px 30px;    /* 30px слева — место под иконку лупы */
+  border: 1px solid #c8cfd8;
+  border-radius: 6px;
+  font-size: 13px;
+  /* SVG-иконка лупы закодирована inline, без зависимости от внешних файлов */
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 8px center;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  color: #333;
+  appearance: none;              /* убрать нативный крестик «сброс» в Chrome */
+  -webkit-appearance: none;
+}
+
+.jcp__search-input:focus {
+  border-color: #5b9bd5;
+  box-shadow: 0 0 0 2px rgba(91, 155, 213, 0.2);
+}
+
+.jcp__search-input::placeholder {
+  color: #aaa;
+}
+
+
+/* ── Элемент: панель вкладок групп ───────────────────────────── */
+/* Скроллится горизонтально при переполнении, скроллбар скрыт.  */
+.jcp__tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;         /* Firefox */
+  background: #f8f9fb;
+  border-bottom: 1px solid #e8ecf0;
+  padding: 0 6px;
+  gap: 2px;
+}
+
+.jcp__tabs::-webkit-scrollbar { display: none; } /* Chrome / Safari / Edge */
+
+/* ── Элемент: одна вкладка группы ────────────────────────────── */
+.jcp__tab {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent; /* индикатор активности */
+  color: #666;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.jcp__tab:hover { color: #333; }
+
+/* Модификатор: текущая (выбранная) вкладка */
+.jcp__tab--active {
+  border-bottom-color: #5b9bd5;
+  color: #2d6da8;
+}
+
+
+/* ── Элемент: прокручиваемое тело попапа ─────────────────────── */
+.jcp__body {
+  overflow-y: auto;
+  max-height: 240px;
+  padding: 8px 6px;
+  min-height: 60px;              /* предотвращает «схлопывание» при загрузке */
+  /* thin-scrollbar mixin */
+  scrollbar-width: thin;
+  scrollbar-color: #d0d8e4 transparent; /* Firefox: «ползунок дорожка» */
+}
+
+.jcp__body::-webkit-scrollbar       { width: 4px; }
+.jcp__body::-webkit-scrollbar-thumb { background: #d0d8e4; border-radius: 2px; }
+.jcp__body::-webkit-scrollbar-track { background: transparent; }
+
+
+/* ── Элемент: заголовок секции ────────────────────────────────── */
+/* Подпись над группой символов («Недавние», «Результаты: 12»…) */
+.jcp__section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #999;
+  padding: 4px 4px 2px;
+  margin-top: 4px;
+}
+
+/* Первый заголовок не нуждается в отступе сверху */
+.jcp__section-title:first-child { margin-top: 0; }
+
+
+/* ── Элемент: сетка символов ─────────────────────────────────── */
+.jcp__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: 4px;
+}
+
+
+/* ── Элемент: один символ в сетке ────────────────────────────── */
+.jcp__char {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.1s, transform 0.08s;
+  user-select: none;
+  -webkit-user-select: none;
+  line-height: 1;
+  box-sizing: border-box;
+  position: relative;            /* нужен для z-index при hover-увеличении */
+}
+
+.jcp__char:hover {
+  background: #e8f0fb;
+  border-color: #c0d4ef;
+  transform: scale(1.18);        /* лёгкое увеличение для лучшей видимости */
+  z-index: 1;                    /* поверх соседних символов */
+}
+
+.jcp__char:active {
+  transform: scale(0.95);
+  background: #d0e4f5;
+}
+
+/* Модификатор: не-эмодзи символ (типографика, математика, валюты…) */
+/* Serif-гарнитура корректно отображает знаки без эмодзи-шрифтов.   */
+.jcp__char--sym {
+  font-size: 16px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+
+/* ── Элемент: тултип с названием символа ─────────────────────── */
+/* fixed-позиционирование, координаты проставляет JS.             */
+.jcp__tooltip {
+  position: fixed;
+  background: #1a2233;
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  pointer-events: none;          /* не мешает hover на символах */
+  z-index: 99999;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.1s;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Модификатор: тултип виден (добавляется JS при mouseover) */
+.jcp__tooltip--visible { opacity: 1; }
+
+
+/* ── Элемент: заглушка «ничего не найдено» ───────────────────── */
+/* Отображается когда поиск пуст или история «Недавних» пуста.   */
+.jcp__empty {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  padding: 20px 10px;
+}
+
+
+/* ── Элемент: подсказка о конвертации раскладки ──────────────── */
+/* Появляется под заголовком результатов, когда поиск сработал   */
+/* благодаря автоматической конвертации EN→RU или RU→EN.         */
+/* Намеренно небольшой: это вспомогательная информация,          */
+/* она не должна перетягивать внимание с результатов.            */
+.jcp__layout-hint {
+  font-size: 10px;
+  color: #2d6da8;
+  background: rgba(91, 155, 213, 0.08);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: 0 0 4px;
+  opacity: 0.85;
+}
