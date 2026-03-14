@@ -3,1364 +3,870 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jquery.charPicker — Демо и документация</title>
+  <title>charPicker v3 — Демо</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="jquery.charPicker.css">
+  <link rel="stylesheet" href="charPicker.core.css">
   <style>
-    /* ── Переменные ────────────────────────────────────── */
     :root {
-      --c-bg:        #f5f3ef;
-      --c-surface:   #ffffff;
-      --c-surface2:  #f0ede8;
-      --c-border:    #e2ddd6;
-      --c-text:      #1a1815;
-      --c-muted:     #8a8278;
-      --c-accent:    #c8622a;
-      --c-accent-2:  #2a6bc8;
-      --c-accent-3:  #2a9c5a;
-      --c-code-bg:   #1e1c1a;
-      --c-code-text: #e8e4de;
-      --c-code-key:  #e8945a;
-      --c-code-str:  #7ec88a;
-      --c-code-com:  #6a6560;
-      --r:           10px;
-      --r-sm:        6px;
-      --font-ui:     'Manrope', sans-serif;
-      --font-serif:  'Instrument Serif', Georgia, serif;
-      --font-mono:   'JetBrains Mono', monospace;
+      --c-bg:       #f5f3ef;
+      --c-surface:  #ffffff;
+      --c-surface2: #f0ede8;
+      --c-border:   #e2ddd6;
+      --c-text:     #1a1815;
+      --c-muted:    #8a8278;
+      --c-accent:   #c8622a;
+      --c-blue:     #2a6bc8;
+      --c-green:    #2a9c5a;
+      --c-code-bg:  #1e1c1a;
+      --c-code-txt: #e8e4de;
+      --c-code-kw:  #9ecbf5;
+      --c-code-str: #7ec88a;
+      --c-code-com: #6a6560;
+      --c-code-fn:  #dca9f5;
+      --c-code-key: #e8945a;
+      --r:    10px;
+      --r-sm: 6px;
+      --ui:   'Manrope', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --serif:'Instrument Serif', Georgia, serif;
     }
-
-    /* ── Reset ─────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font-ui);
-      background: var(--c-bg);
-      color: var(--c-text);
-      font-size: 15px;
-      line-height: 1.65;
-    }
+    body { font-family: var(--ui); background: var(--c-bg); color: var(--c-text); font-size: 15px; line-height: 1.65; }
 
-    /* ── Шапка ─────────────────────────────────────────── */
-    .site-header {
-      background: var(--c-text);
-      color: #f5f3ef;
-      padding: 64px 0 56px;
-      position: relative;
-      overflow: hidden;
-    }
-    .site-header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(200,98,42,.18) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 60% at 10% 80%, rgba(42,107,200,.12) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .site-header .wrap { position: relative; }
-    .header-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--c-accent);
-      margin-bottom: 16px;
-    }
-    .header-title {
-      font-family: var(--font-serif);
-      font-size: clamp(36px, 6vw, 72px);
-      font-weight: 400;
-      line-height: 1.05;
-      letter-spacing: -.02em;
-      margin-bottom: 18px;
-    }
-    .header-title em {
-      font-style: italic;
-      color: rgba(245,243,239,.55);
-    }
-    .header-sub {
-      font-size: 16px;
-      color: rgba(245,243,239,.65);
-      max-width: 520px;
-      margin-bottom: 32px;
-    }
+    /* ── Header ── */
+    .hdr { background: var(--c-text); color: #f5f3ef; padding: 56px 0 48px; position: relative; overflow: hidden; }
+    .hdr::before { content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(200,98,42,.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 60% at 10% 80%, rgba(42,107,200,.12) 0%, transparent 60%);
+      pointer-events:none; }
+    .hdr .w { position: relative; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--c-accent); margin-bottom: 14px; }
+    .hdr h1 { font-family: var(--serif); font-size: clamp(32px,6vw,68px); font-weight: 400; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 16px; }
+    .hdr h1 em { font-style: italic; color: rgba(245,243,239,.5); }
+    .hdr p { font-size: 15px; color: rgba(245,243,239,.65); max-width: 540px; margin-bottom: 28px; }
     .badges { display: flex; flex-wrap: wrap; gap: 8px; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      color: rgba(245,243,239,.8);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
+    .badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: rgba(245,243,239,.8); font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 20px; }
     .badge b { color: #f5f3ef; }
 
-    /* ── Навигация ─────────────────────────────────────── */
-    .site-nav {
-      background: var(--c-surface);
-      border-bottom: 1px solid var(--c-border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .nav-inner {
-      display: flex;
-      gap: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
+    /* ── Nav ── */
+    .nav { background: var(--c-surface); border-bottom: 1px solid var(--c-border); position: sticky; top: 0; z-index: 200; }
+    .nav-inner { display: flex; overflow-x: auto; scrollbar-width: none; }
     .nav-inner::-webkit-scrollbar { display: none; }
-    .nav-link {
-      flex: 0 0 auto;
-      padding: 14px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--c-muted);
-      text-decoration: none;
-      border-bottom: 2px solid transparent;
-      transition: color .15s, border-color .15s;
-      white-space: nowrap;
-    }
-    .nav-link:hover { color: var(--c-text); }
-    .nav-link.active {
-      color: var(--c-accent);
-      border-bottom-color: var(--c-accent);
-    }
+    .nav-a { flex: 0 0 auto; padding: 13px 16px; font-size: 13px; font-weight: 500; color: var(--c-muted); text-decoration: none; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; white-space: nowrap; }
+    .nav-a:hover { color: var(--c-text); }
+    .nav-a.on { color: var(--c-accent); border-bottom-color: var(--c-accent); }
 
-    /* ── Основная сетка ────────────────────────────────── */
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-    .layout { display: grid; grid-template-columns: 1fr; gap: 48px; padding: 56px 0 80px; }
+    /* ── Layout ── */
+    .w { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .page { padding: 52px 0 80px; display: grid; gap: 56px; }
+    section { scroll-margin-top: 58px; }
+    .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--c-border); }
+    .sec-num { font-family: var(--mono); font-size: 11px; color: var(--c-muted); }
+    .sec-head h2 { font-family: var(--serif); font-size: 26px; font-weight: 400; letter-spacing: -.02em; }
 
-    /* ── Секция ────────────────────────────────────────── */
-    .section { scroll-margin-top: 60px; }
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 24px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--c-border);
-    }
-    .section-num {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--c-muted);
-      flex: 0 0 auto;
-    }
-    .section-title {
-      font-family: var(--font-serif);
-      font-size: 28px;
-      font-weight: 400;
-      letter-spacing: -.02em;
-    }
+    /* ── Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 18px; }
+    .card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r); overflow: hidden; }
+    .card-head { padding: 14px 18px 12px; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; gap: 10px; }
+    .card-icon { width: 26px; height: 26px; border-radius: 6px; background: var(--c-surface2); display: flex; align-items: center; justify-content: center; font-size: 13px; flex: 0 0 auto; }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .card-desc  { font-size: 12px; color: var(--c-muted); margin-top: 1px; }
+    .card-body  { padding: 18px; }
 
-    /* ── Демо-карточки ─────────────────────────────────── */
-    .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 20px; }
-    .demo-card {
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r);
-      overflow: hidden;
-    }
-    .demo-card-head {
-      padding: 16px 20px 12px;
-      border-bottom: 1px solid var(--c-border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .demo-card-icon {
-      width: 28px; height: 28px;
-      border-radius: 7px;
-      background: var(--c-surface2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      flex: 0 0 auto;
-    }
-    .demo-card-title { font-size: 13px; font-weight: 600; }
-    .demo-card-desc  { font-size: 12px; color: var(--c-muted); margin-top: 1px; }
-    .demo-card-body  { padding: 20px; }
+    /* ── Fields ── */
+    .field { width: 100%; padding: 8px 12px; border: 1px solid var(--c-border); border-radius: var(--r-sm); font-family: var(--ui); font-size: 14px; color: var(--c-text); background: var(--c-bg); transition: border-color .15s, box-shadow .15s; outline: none; }
+    .field:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(200,98,42,.12); }
+    textarea.field { resize: vertical; min-height: 72px; }
 
-    /* ── Поля ввода ────────────────────────────────────── */
-    .field {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1px solid var(--c-border);
-      border-radius: var(--r-sm);
-      font-family: var(--font-ui);
-      font-size: 14px;
-      color: var(--c-text);
-      background: var(--c-bg);
-      transition: border-color .15s, box-shadow .15s;
-      outline: none;
-    }
-    .field:focus {
-      border-color: var(--c-accent);
-      box-shadow: 0 0 0 3px rgba(200,98,42,.12);
-    }
-    textarea.field { resize: vertical; min-height: 80px; }
+    /* ── Log ── */
+    .log { margin-top: 10px; min-height: 30px; padding: 6px 11px; background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm); font-family: var(--mono); font-size: 11.5px; color: var(--c-muted); transition: color .2s; }
+    .log.flash { color: var(--c-accent); }
 
-    /* ── Вывод события ─────────────────────────────────── */
-    .event-log {
-      margin-top: 10px;
-      min-height: 32px;
-      padding: 7px 11px;
-      background: var(--c-surface2);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r-sm);
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      color: var(--c-muted);
-      transition: color .2s;
-    }
-    .event-log.flash { color: var(--c-accent); }
-
-    /* ── Кнопки ────────────────────────────────────────── */
+    /* ── Buttons ── */
     .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .btn {
-      padding: 7px 14px;
-      border-radius: var(--r-sm);
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--c-border);
-      background: var(--c-surface);
-      color: var(--c-text);
-      transition: background .12s, border-color .12s;
-    }
-    .btn:hover { background: var(--c-surface2); border-color: #c8c0b6; }
-    .btn-accent {
-      background: var(--c-accent);
-      border-color: var(--c-accent);
-      color: #fff;
-    }
-    .btn-accent:hover { background: #b5551f; border-color: #b5551f; }
+    .btn { padding: 7px 14px; border-radius: var(--r-sm); font-family: var(--ui); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); transition: background .12s, border-color .12s; }
+    .btn:hover { background: var(--c-surface2); }
+    .btn-pri { background: var(--c-accent); border-color: var(--c-accent); color: #fff; }
+    .btn-pri:hover { background: #b5551f; border-color: #b5551f; }
 
-    /* ── Блок кода ─────────────────────────────────────── */
-    .code-block {
-      background: var(--c-code-bg);
-      border-radius: var(--r);
-      overflow: hidden;
-    }
-    .code-block-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      background: rgba(255,255,255,.04);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .code-lang {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.3);
-    }
-    .copy-btn {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: rgba(255,255,255,.35);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: color .15s, background .15s;
-    }
+    /* ── Toolbar demo ── */
+    .toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r-sm) var(--r-sm) 0 0; border-bottom: none; }
+    .toolbar-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface); font-size: 14px; cursor: pointer; transition: background .12s, border-color .12s; }
+    .toolbar-btn:hover { background: var(--c-bg); border-color: #c8c0b6; }
+    .toolbar-btn.charpicker-btn { font-size: 16px; }
+    .field-attached { border-radius: 0 0 var(--r-sm) var(--r-sm); }
+
+    /* ── Code ── */
+    .code { background: var(--c-code-bg); border-radius: var(--r); overflow: hidden; margin-top: 12px; }
+    .code-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); }
+    .code-lang { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.3); }
+    .copy-btn { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,.35); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: color .15s, background .15s; }
     .copy-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .code-block pre {
-      padding: 20px;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--c-code-text);
-    }
-    .code-block code .kw  { color: #9ecbf5; }
-    .code-block code .str { color: var(--c-code-str); }
-    .code-block code .com { color: var(--c-code-com); font-style: italic; }
-    .code-block code .fn  { color: #dca9f5; }
-    .code-block code .num { color: #f5c842; }
-    .code-block code .key { color: var(--c-code-key); }
+    .code pre { padding: 18px 20px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; color: var(--c-code-txt); }
+    .kw  { color: var(--c-code-kw); }
+    .str { color: var(--c-code-str); }
+    .com { color: var(--c-code-com); font-style: italic; }
+    .fn  { color: var(--c-code-fn); }
+    .key { color: var(--c-code-key); }
+    .num { color: #f5c842; }
 
-    /* ── Таблицы ───────────────────────────────────────── */
-    .doc-table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--c-border); }
-    .doc-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .doc-table th {
-      background: var(--c-surface2);
-      padding: 10px 16px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--c-muted);
-      border-bottom: 1px solid var(--c-border);
-    }
-    .doc-table td {
-      padding: 11px 16px;
-      border-bottom: 1px solid var(--c-border);
-      vertical-align: top;
-    }
-    .doc-table tr:last-child td { border-bottom: none; }
-    .doc-table tr:hover td { background: var(--c-surface2); }
-    .doc-table code {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      background: var(--c-surface2);
-      padding: 1px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--c-border);
-    }
+    /* ── Info boxes ── */
+    .info { display: flex; gap: 12px; background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-accent); border-radius: var(--r-sm); padding: 13px 16px; font-size: 13.5px; margin-bottom: 12px; }
+    .info.blue  { border-left-color: var(--c-blue); }
+    .info.green { border-left-color: var(--c-green); }
 
-    /* ── Опции-карточки ────────────────────────────────── */
-    .opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 14px; }
-    .opt-card {
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r);
-      padding: 18px 20px;
-    }
-    .opt-name {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--c-accent);
-      margin-bottom: 4px;
-    }
-    .opt-type {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--c-muted);
-      background: var(--c-surface2);
-      padding: 1px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--c-border);
-      display: inline-block;
-      margin-bottom: 8px;
-    }
-    .opt-default {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #2a9c5a;
-      background: rgba(42,156,90,.08);
-      padding: 1px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(42,156,90,.2);
-      display: inline-block;
-      margin-left: 4px;
-      margin-bottom: 8px;
-    }
-    .opt-desc { font-size: 13px; color: var(--c-muted); line-height: 1.55; }
+    /* ── Options table ── */
+    .tbl-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--c-border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { background: var(--c-surface2); padding: 10px 14px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); border-bottom: 1px solid var(--c-border); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--c-border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--c-surface2); }
+    td code, th code { font-family: var(--mono); font-size: 12px; background: var(--c-surface2); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--c-border); }
 
-    /* ── Панели-чипы ───────────────────────────────────── */
-    .panels-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-    .panel-chip {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r-sm);
-      padding: 10px 14px;
-      min-width: 190px;
-    }
-    .panel-chip-icon { font-size: 20px; line-height: 1; flex: 0 0 auto; }
-    .panel-chip-id {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--c-accent-2);
-    }
-    .panel-chip-name { font-size: 12px; color: var(--c-muted); }
-    .panel-chip-count {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--c-muted);
-      background: var(--c-surface2);
-      padding: 2px 7px;
-      border-radius: 10px;
-    }
+    /* ── DOM tree ── */
+    .dom { font-family: var(--mono); font-size: 12.5px; line-height: 1.8; background: var(--c-code-bg); color: var(--c-code-txt); padding: 18px 22px; border-radius: var(--r); overflow-x: auto; }
+    .dt { color: var(--c-code-kw); }
+    .dc { color: var(--c-code-key); }
+    .da { color: var(--c-code-str); }
+    .dd { color: var(--c-code-com); font-style: italic; }
 
-    /* ── Архитектурная схема ───────────────────────────── */
-    .arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 14px; }
-    .arch-card {
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r);
-      padding: 18px 20px;
-    }
-    .arch-card-title {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: var(--c-muted);
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--c-border);
-    }
-    .arch-item {
-      display: flex;
-      gap: 8px;
-      font-size: 12.5px;
-      padding: 4px 0;
-      border-bottom: 1px dashed var(--c-border);
-    }
-    .arch-item:last-child { border-bottom: none; }
-    .arch-item-name {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      color: var(--c-accent);
-      flex: 0 0 auto;
-      min-width: 120px;
-    }
-    .arch-item-desc { color: var(--c-muted); font-size: 12px; }
-
-    /* ── Инфо-блок ─────────────────────────────────────── */
-    .info-box {
-      display: flex;
-      gap: 12px;
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-left: 3px solid var(--c-accent);
-      border-radius: var(--r-sm);
-      padding: 14px 16px;
-      font-size: 13.5px;
-    }
-    .info-box.blue { border-left-color: var(--c-accent-2); }
-    .info-box.green { border-left-color: var(--c-accent-3); }
-
-    /* ── Поиск-демо ────────────────────────────────────── */
-    .search-demo {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .search-case {
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r-sm);
-      padding: 14px 16px;
-    }
-    .search-case-label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--c-muted);
-      margin-bottom: 8px;
-    }
-    .search-case-typed {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--c-accent);
-    }
-    .search-case-arrow {
-      color: var(--c-muted);
-      margin: 0 4px;
-    }
-    .search-case-result {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--c-accent-3);
-    }
-
-    /* ── BEM-блок ──────────────────────────────────────── */
-    .bem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 12px; }
-    .bem-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      padding: 10px 14px;
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: var(--r-sm);
-    }
-    .bem-class {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      flex: 0 0 auto;
-      min-width: 200px;
-    }
-    .bem-block  { color: var(--c-accent); }
-    .bem-elem   { color: var(--c-accent-2); }
-    .bem-mod    { color: var(--c-accent-3); }
-    .bem-desc   { font-size: 12px; color: var(--c-muted); }
-
-    /* ── Footer ────────────────────────────────────────── */
-    .site-footer {
-      background: var(--c-text);
-      color: rgba(245,243,239,.5);
-      padding: 32px 0;
-      margin-top: 40px;
-      font-size: 13px;
-    }
-    .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .footer-logo {
-      font-family: var(--font-serif);
-      font-size: 18px;
-      font-weight: 400;
-      color: #f5f3ef;
-    }
-
-    /* ── DOM-дерево ────────────────────────────────────── */
-    .dom-tree {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      line-height: 1.8;
-      background: var(--c-code-bg);
-      color: var(--c-code-text);
-      padding: 20px 24px;
-      border-radius: var(--r);
-      overflow-x: auto;
-    }
-    .dom-tag  { color: #9ecbf5; }
-    .dom-cls  { color: var(--c-code-key); }
-    .dom-attr { color: #7ec88a; }
-    .dom-com  { color: var(--c-code-com); font-style: italic; }
-    .dom-text { color: rgba(232,228,222,.5); }
+    /* ── Footer ── */
+    .ftr { background: var(--c-text); color: rgba(245,243,239,.5); padding: 28px 0; margin-top: 32px; font-size: 13px; }
+    .ftr-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .ftr-logo { font-family: var(--serif); font-size: 18px; color: #f5f3ef; }
 
     @media (max-width: 640px) {
-      .search-demo { grid-template-columns: 1fr; }
-      .demo-grid   { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ ШАПКА ══════════════════════════════════════════════════ -->
-<header class="site-header">
-  <div class="wrap">
-    <p class="header-eyebrow">jQuery Plugin · v1.2.0</p>
-    <h1 class="header-title">jquery.<em>charPicker</em></h1>
-    <p class="header-sub">Вставка спецсимволов и эмодзи в input/textarea. Поиск с умной коррекцией раскладки EN↔RU. BEM-стили, никаких зависимостей кроме jQuery.</p>
+<!-- ══ HEADER ══════════════════════════════════════════════════════ -->
+<header class="hdr">
+  <div class="w">
+    <p class="eyebrow">jQuery Plugin · v3.1.0</p>
+    <h1>jquery.<em>charPicker</em></h1>
+    <p>Вставка спецсимволов и эмодзи в input/textarea. Ленивая загрузка ядра. Поиск с коррекцией раскладки EN↔RU и ё/е. Клавиатурная навигация. Позиционирование по якорю.</p>
     <div class="badges">
       <span class="badge">⚙️ <b>ES5</b> совместим</span>
       <span class="badge">📦 <b>jQuery ≥ 1.9</b></span>
       <span class="badge">🎨 <b>BEM</b> · блок .jcp</span>
-      <span class="badge">🔣 <b>~372</b> символа</span>
-      <span class="badge">⌨️ <b>EN↔RU</b> раскладка</span>
-      <span class="badge">🔒 <b>XSS</b>-защита</span>
+      <span class="badge">⌨️ Клавиатура</span>
+      <span class="badge">🔍 EN↔RU + ё/е</span>
+      <span class="badge">📍 position:fixed</span>
+      <span class="badge">🔒 XSS-защита</span>
     </div>
   </div>
 </header>
 
-<!-- ══ НАВИГАЦИЯ ═══════════════════════════════════════════════ -->
-<nav class="site-nav">
-  <div class="wrap">
+<!-- ══ NAV ═════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <div class="w">
     <div class="nav-inner">
-      <a href="#quickstart" class="nav-link active">Старт</a>
-      <a href="#demo"       class="nav-link">Демо</a>
-      <a href="#api"        class="nav-link">API</a>
-      <a href="#options"    class="nav-link">Опции</a>
-      <a href="#panels"     class="nav-link">Панели</a>
-      <a href="#search"     class="nav-link">Поиск</a>
-      <a href="#bem"        class="nav-link">BEM</a>
-      <a href="#arch"       class="nav-link">Архитектура</a>
-      <a href="#security"   class="nav-link">Безопасность</a>
+      <a href="#s1" class="nav-a">1 · Базовый</a>
+      <a href="#s2" class="nav-a">2 · Только панели</a>
+      <a href="#s3" class="nav-a">3 · Внешний триггер</a>
+      <a href="#s4" class="nav-a">4 · Тулбар</a>
+      <a href="#s5" class="nav-a">5 · Колбэк trigger</a>
+      <a href="#s6" class="nav-a">6 · closeOnPick</a>
+      <a href="#s7" class="nav-a">7 · align / position</a>
+      <a href="#s8" class="nav-a">8 · Управление API</a>
+      <a href="#s9" class="nav-a">9 · Опции</a>
+      <a href="#s10" class="nav-a">10 · DOM</a>
     </div>
   </div>
 </nav>
 
-<!-- ══ КОНТЕНТ ════════════════════════════════════════════════ -->
-<div class="wrap">
-<div class="layout">
+<!-- ══ CONTENT ═════════════════════════════════════════════════════ -->
+<div class="w">
+<div class="page">
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- БЫСТРЫЙ СТАРТ                                              -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="quickstart" class="section">
-  <div class="section-header">
-    <span class="section-num">01</span>
-    <h2 class="section-title">Быстрый старт</h2>
-  </div>
-
-  <div class="code-block" style="margin-bottom:20px">
-    <div class="code-block-head">
-      <span class="code-lang">html</span>
-      <button class="copy-btn" onclick="copyCode(this)">копировать</button>
+<!-- ─── 1. БАЗОВЫЙ ──────────────────────────────────────────────── -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Базовый — trigger:'auto'</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:16px">
+    Режим по умолчанию. Плагин создаёт кнопку-триггер рядом с полем.
+    Ядро (<code>charPicker.core.js</code> + <code>charPicker.core.css</code>) загружается лениво — только при первом клике.
+  </p>
+  <div class="info blue" style="margin-bottom:20px">
+    <span>ℹ️</span>
+    <div>
+      <strong>Локальное открытие (file://):</strong> браузер блокирует XHR-запросы,
+      поэтому <code>charpicker-data.min.json</code> не загружается.
+      Плагин автоматически переключается на встроенный тестовый набор (~197 символов).
+      Для полного набора откройте страницу через веб-сервер.
     </div>
-    <pre><code><span class="com">&lt;!-- 1. Подключить стили --&gt;</span>
-<span class="kw">&lt;link</span> <span class="key">rel</span>=<span class="str">"stylesheet"</span> <span class="key">href</span>=<span class="str">"jquery.charPicker.css"</span><span class="kw">&gt;</span>
-
-<span class="com">&lt;!-- 2. Разметка --&gt;</span>
-<span class="kw">&lt;input</span> <span class="key">type</span>=<span class="str">"text"</span> <span class="key">id</span>=<span class="str">"field"</span> <span class="key">placeholder</span>=<span class="str">"Введите текст…"</span><span class="kw">&gt;</span>
-
-<span class="com">&lt;!-- 3. Подключить jQuery и плагин --&gt;</span>
-<span class="kw">&lt;script</span> <span class="key">src</span>=<span class="str">"jquery-3.7.1.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
-<span class="kw">&lt;script</span> <span class="key">src</span>=<span class="str">"jquery.charPicker.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
-
-<span class="com">&lt;!-- 4. Инициализация --&gt;</span>
-<span class="kw">&lt;script&gt;</span>
-  $(<span class="str">'#field'</span>).<span class="fn">charPicker</span>();
-<span class="kw">&lt;/script&gt;</span></code></pre>
   </div>
 
-  <div class="info-box">
-    <span>💡</span>
-    <div>После инициализации рядом с полем появится кнопка ☺. Клик открывает попап с поиском и 10 панелями символов. Клик по символу вставляет его в позицию курсора.</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">📝</div>
+        <div>
+          <div class="card-title">input[type=text]</div>
+          <div class="card-desc">Все группы символов</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f1" type="text" class="field" placeholder="Кликните на ☺ справа…">
+        <div id="log1" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">📄</div>
+        <div>
+          <div class="card-title">textarea</div>
+          <div class="card-desc">Вставка в позицию курсора</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <textarea id="f2" class="field" placeholder="Пишите, затем вставьте символ…"></textarea>
+        <div id="log2" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code">
+    <div class="code-head"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code><span class="com">// Минимальная инициализация — кнопка создаётся автоматически</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  dataUrl: <span class="str">'/js/charpicker-data.min.json'</span>
+});</code></pre>
   </div>
 </section>
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- ЖИВОЕ ДЕМО                                                 -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="demo" class="section">
-  <div class="section-header">
-    <span class="section-num">02</span>
-    <h2 class="section-title">Живое демо</h2>
+<!-- ─── 2. ТОЛЬКО ПАНЕЛИ ─────────────────────────────────────────── -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Фильтр панелей</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    Опция <code>panels</code> ограничивает видимые группы символов.
+    Удобно когда нужны только эмодзи или только математика.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">😀</div>
+        <div>
+          <div class="card-title">panels: ['smileys','gestures','nature','symbols_emo']</div>
+          <div class="card-desc">Только эмодзи</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f3" type="text" class="field" placeholder="Только эмодзи…">
+        <div id="log3" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">∑</div>
+        <div>
+          <div class="card-title">panels: ['math']</div>
+          <div class="card-desc">Только математические символы</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f4" type="text" class="field" placeholder="Только математика…">
+        <div id="log4" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
   </div>
 
-  <div class="demo-grid">
+  <div class="code">
+    <div class="code-head"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code><span class="com">// Только эмодзи</span>
+$(<span class="str">'#emoji-field'</span>).<span class="fn">charPicker</span>({
+  dataUrl: <span class="str">'/js/charpicker-data.min.json'</span>,
+  panels: [<span class="str">'smileys'</span>, <span class="str">'gestures'</span>, <span class="str">'nature'</span>, <span class="str">'symbols_emo'</span>]
+});
 
-    <!-- Стандартный -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">🌐</div>
+<span class="com">// Только математика</span>
+$(<span class="str">'#math-field'</span>).<span class="fn">charPicker</span>({
+  dataUrl: <span class="str">'/js/charpicker-data.min.json'</span>,
+  panels: [<span class="str">'math'</span>]
+});</code></pre>
+  </div>
+</section>
+
+
+<!-- ─── 3. ВНЕШНИЙ ТРИГГЕР ───────────────────────────────────────── -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Внешний триггер — trigger: Element</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    Передайте готовый DOM-элемент или jQuery-объект как <code>trigger</code>.
+    Плагин сам повесит <code>click</code> и будет позиционировать попап относительно этой кнопки.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🔗</div>
         <div>
-          <div class="demo-card-title">Все панели</div>
-          <div class="demo-card-desc">Стандартная инициализация · panels: null</div>
+          <div class="card-title">trigger: $('#my-btn')</div>
+          <div class="card-desc">Попап под переданной кнопкой</div>
         </div>
       </div>
-      <div class="demo-card-body">
-        <input type="text" id="demo-all" class="field" placeholder="Нажмите ☺ или начните вводить…">
-        <div class="event-log" id="log-all">ожидание…</div>
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="f5" type="text" class="field" placeholder="Поле ввода…">
+          <button id="btn5" class="btn btn-pri" type="button">☺ Символ</button>
+        </div>
+        <div id="log5" class="log">— ожидание выбора —</div>
       </div>
     </div>
 
-    <!-- Только эмодзи -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">😀</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🔗</div>
         <div>
-          <div class="demo-card-title">Только эмодзи</div>
-          <div class="demo-card-desc">smileys, gestures, nature, food, symbols_emo</div>
+          <div class="card-title">trigger: false + вызов через API</div>
+          <div class="card-desc">Полный контроль — когда открывать</div>
         </div>
       </div>
-      <div class="demo-card-body">
-        <input type="text" id="demo-emoji" class="field" placeholder="Только эмодзи…">
-        <div class="event-log" id="log-emoji">ожидание…</div>
-      </div>
-    </div>
-
-    <!-- Спецсимволы -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">∑</div>
-        <div>
-          <div class="demo-card-title">Спецсимволы</div>
-          <div class="demo-card-desc">arrows, math, typography, currency, diacritics</div>
-        </div>
-      </div>
-      <div class="demo-card-body">
-        <input type="text" id="demo-sym" class="field" placeholder="Без эмодзи…">
-        <div class="event-log" id="log-sym">ожидание…</div>
-      </div>
-    </div>
-
-    <!-- Типографика -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">«</div>
-        <div>
-          <div class="demo-card-title">Типографика</div>
-          <div class="demo-card-desc">typography + currency · для редактора</div>
-        </div>
-      </div>
-      <div class="demo-card-body">
-        <input type="text" id="demo-typo" class="field" placeholder="Кавычки, тире, знаки…">
-        <div class="event-log" id="log-typo">ожидание…</div>
-      </div>
-    </div>
-
-    <!-- Textarea -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">📝</div>
-        <div>
-          <div class="demo-card-title">Textarea</div>
-          <div class="demo-card-desc">Многострочное поле · все панели</div>
-        </div>
-      </div>
-      <div class="demo-card-body">
-        <textarea id="demo-area" class="field" placeholder="Многострочный текст…"></textarea>
-        <div class="event-log" id="log-area">ожидание…</div>
-      </div>
-    </div>
-
-    <!-- Управление -->
-    <div class="demo-card">
-      <div class="demo-card-head">
-        <div class="demo-card-icon">⚙️</div>
-        <div>
-          <div class="demo-card-title">Программное управление</div>
-          <div class="demo-card-desc">open / close / destroy / reinit</div>
-        </div>
-      </div>
-      <div class="demo-card-body">
-        <input type="text" id="demo-ctrl" class="field" placeholder="Управление через API…">
+      <div class="card-body">
+        <input id="f6" type="text" class="field" placeholder="Поле ввода…">
         <div class="btn-row">
-          <button class="btn btn-accent" onclick="$('#demo-ctrl').charPicker('open')">open()</button>
-          <button class="btn" onclick="$('#demo-ctrl').charPicker('close')">close()</button>
-          <button class="btn" onclick="destroyDemo()">destroy()</button>
-          <button class="btn" onclick="reinitDemo()">reinit()</button>
+          <button class="btn btn-pri" onclick="$('#f6').charPicker('open', this)">☺ Открыть (якорь=кнопка)</button>
+          <button class="btn" onclick="$('#f6').charPicker('open')">Открыть (якорь=поле)</button>
         </div>
-        <div class="event-log" id="log-ctrl">ожидание…</div>
+        <div id="log6" class="log">— ожидание выбора —</div>
       </div>
     </div>
+  </div>
 
+  <div class="code">
+    <div class="code-head"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code><span class="com">// Вариант А: передаём готовую кнопку</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  trigger: $(<span class="str">'#my-btn'</span>),  <span class="com">// плагин вешает click сам</span>
+  dataUrl: <span class="str">'/js/data.json'</span>
+});
+
+<span class="com">// Вариант Б: trigger:false — открытие только через API</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  trigger: <span class="kw">false</span>,
+  dataUrl: <span class="str">'/js/data.json'</span>
+});
+<span class="com">// Открываем кнопкой, передаём её как якорь позиционирования:</span>
+$(<span class="str">'#my-btn'</span>).<span class="fn">on</span>(<span class="str">'click'</span>, <span class="kw">function</span>() {
+  $(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'open'</span>, <span class="kw">this</span>);
+});</code></pre>
   </div>
 </section>
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- API                                                        -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="api" class="section">
-  <div class="section-header">
-    <span class="section-num">03</span>
-    <h2 class="section-title">API</h2>
+<!-- ─── 4. ТУЛБАР ────────────────────────────────────────────────── -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Встройка в тулбар — trigger: $('.charpicker')</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    Типичный сценарий для форм с тулбаром. Кнопка уже в HTML,
+    плагин вешает на неё обработчик и позиционирует попап под ней.
+  </p>
+
+  <div class="card" style="max-width:560px">
+    <div class="card-body" style="padding:0">
+      <div class="toolbar">
+        <button class="toolbar-btn" title="Жирный" disabled><b>B</b></button>
+        <button class="toolbar-btn" title="Курсив" disabled><i>I</i></button>
+        <button class="toolbar-btn" title="Подчёркнутый" disabled><u>U</u></button>
+        <div style="width:1px;height:20px;background:var(--c-border);margin:0 2px"></div>
+        <button id="btn-toolbar" class="toolbar-btn charpicker-btn" title="Вставить символ">☺</button>
+      </div>
+      <div style="padding:14px">
+        <textarea id="f7" class="field field-attached" placeholder="Текст с поддержкой спецсимволов…"></textarea>
+        <div id="log7" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
   </div>
 
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; margin-bottom:24px">
+  <div class="code">
+    <div class="code-head"><span class="code-lang">HTML + JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code><span class="com">&lt;!-- HTML: кнопка в тулбаре --&gt;</span>
+&lt;<span class="kw">div</span> class=<span class="str">"toolbar"</span>&gt;
+  &lt;<span class="kw">button</span> class=<span class="str">"toolbar-btn charpicker"</span>&gt;☺&lt;/<span class="kw">button</span>&gt;
+&lt;/<span class="kw">div</span>&gt;
+&lt;<span class="kw">textarea</span> id=<span class="str">"my-field"</span>&gt;&lt;/<span class="kw">textarea</span>&gt;
 
-    <div class="code-block">
-      <div class="code-block-head"><span class="code-lang">инициализация</span></div>
-      <pre><code><span class="com">// Defaults</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>();
+<span class="com">// JS: передаём кнопку из тулбара как триггер</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  trigger: $(<span class="str">'.charpicker'</span>),
+  dataUrl: <span class="str">'/js/data.json'</span>
+});</code></pre>
+  </div>
+</section>
 
-<span class="com">// С опциями</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>({ panels: [<span class="str">'math'</span>] });
 
-<span class="com">// Несколько полей</span>
-$(<span class="str">'input, textarea'</span>).<span class="fn">charPicker</span>();</code></pre>
+<!-- ─── 5. КОЛБЭК TRIGGER ────────────────────────────────────────── -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Колбэк trigger — полный контроль</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    Для сложных случаев: кнопка создаётся или подключается через колбэк.
+    Колбэк получает функцию <code>open(anchor)</code> — вызовите её когда нужно.
+    <code>this</code> внутри колбэка — DOM-элемент поля ввода.
+  </p>
+
+  <div class="card" style="max-width:560px">
+    <div class="card-head">
+      <div class="card-icon">🔧</div>
+      <div>
+        <div class="card-title">trigger: function(open) { … }</div>
+        <div class="card-desc">Кнопка добавляется через колбэк</div>
+      </div>
     </div>
-
-    <div class="code-block">
-      <div class="code-block-head"><span class="code-lang">методы</span></div>
-      <pre><code><span class="com">// Открыть попап</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>(<span class="str">'open'</span>);
-
-<span class="com">// Закрыть попап</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>(<span class="str">'close'</span>);
-
-<span class="com">// Удалить плагин</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>(<span class="str">'destroy'</span>);</code></pre>
+    <div class="card-body">
+      <div id="cb-toolbar" style="display:flex;gap:6px;margin-bottom:8px">
+        <!-- Кнопка будет добавлена плагином через колбэк -->
+      </div>
+      <textarea id="f8" class="field" placeholder="Кнопка ☺ появится в блоке выше…"></textarea>
+      <div id="log8" class="log">— ожидание выбора —</div>
     </div>
-
-    <div class="code-block">
-      <div class="code-block-head"><span class="code-lang">прямой доступ</span></div>
-      <pre><code><span class="com">// Экземпляр CharPicker</span>
-<span class="kw">var</span> inst = $(<span class="str">'#f'</span>)
-  .<span class="fn">data</span>(<span class="str">'cp-instance'</span>);
-
-<span class="kw">if</span> (inst) {
-  inst.<span class="fn">open</span>();
-  inst.<span class="fn">close</span>();
-  inst.<span class="fn">destroy</span>();
-}</code></pre>
-    </div>
-
   </div>
 
-  <div class="doc-table-wrap">
-    <table class="doc-table">
-      <thead><tr><th>Метод</th><th>Описание</th><th>Повтор</th></tr></thead>
+  <div class="code">
+    <div class="code-head"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code>$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  trigger: <span class="kw">function</span>(open) {
+    <span class="com">// this = DOM textarea</span>
+    <span class="kw">var</span> $btn = $(<span class="str">'&lt;button type="button"&gt;☺ Символ&lt;/button&gt;'</span>);
+    $btn.<span class="fn">on</span>(<span class="str">'click'</span>, <span class="kw">function</span>(e) {
+      open(e.currentTarget); <span class="com">// передаём кнопку как якорь</span>
+    });
+    $(<span class="kw">this</span>).<span class="fn">closest</span>(<span class="str">'.form'</span>).<span class="fn">find</span>(<span class="str">'.toolbar'</span>).<span class="fn">append</span>($btn);
+  },
+  dataUrl: <span class="str">'/js/data.json'</span>
+});</code></pre>
+  </div>
+</section>
+
+
+<!-- ─── 6. CLOSEONPICK ───────────────────────────────────────────── -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>closeOnPick</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    По умолчанию <code>closeOnPick:false</code> — диалог остаётся открытым для ввода нескольких символов подряд.
+    При <code>closeOnPick:true</code> диалог закрывается сразу после выбора.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🔓</div>
+        <div>
+          <div class="card-title">closeOnPick: false</div>
+          <div class="card-desc">Диалог остаётся открытым (по умолч.)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f9" type="text" class="field" placeholder="Можно выбрать несколько символов…">
+        <div id="log9" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🔒</div>
+        <div>
+          <div class="card-title">closeOnPick: true</div>
+          <div class="card-desc">Диалог закрывается после выбора</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f10" type="text" class="field" placeholder="Один символ — диалог закрылся…">
+        <div id="log10" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── 7. ALIGN / POSITION ─────────────────────────────────────── -->
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>align и position</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    <code>align</code> управляет горизонтальным позиционированием попапа,
+    <code>position</code> — вертикальным.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">⬅</div>
+        <div>
+          <div class="card-title">align: 'field' (по умолч.)</div>
+          <div class="card-desc">По левому краю поля ввода</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f11" type="text" class="field" placeholder="Попап выровнен по полю…">
+        <div id="log11" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🎯</div>
+        <div>
+          <div class="card-title">align: 'anchor'</div>
+          <div class="card-desc">По левому краю кнопки-триггера</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f12" type="text" class="field" placeholder="Попап выровнен по кнопке…">
+        <div id="log12" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">☝</div>
+        <div>
+          <div class="card-title">position: 'top'</div>
+          <div class="card-desc">Попап всегда открывается вверх</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="f13" type="text" class="field" placeholder="Попап открывается вверх…">
+        <div id="log13" class="log">— ожидание выбора —</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── 8. УПРАВЛЕНИЕ API ────────────────────────────────────────── -->
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Управление через API — колбэки и методы</h2></div>
+  <p style="font-size:13.5px;color:var(--c-muted);margin-bottom:20px">
+    Публичные методы: <code>open</code>, <code>close</code>, <code>toggle</code>, <code>destroy</code>.
+    Колбэки: <code>onOpen</code>, <code>onClose</code>, <code>onSelect</code>, <code>onDataError</code>.
+  </p>
+
+  <div class="card" style="max-width:560px">
+    <div class="card-head">
+      <div class="card-icon">🎛</div>
+      <div>
+        <div class="card-title">Методы и колбэки</div>
+        <div class="card-desc">open / close / toggle / destroy + reinit</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <textarea id="f14" class="field" placeholder="Управляйте через кнопки ниже…"></textarea>
+      <div id="log14" class="log">— ожидание события —</div>
+      <div class="btn-row">
+        <button class="btn btn-pri" onclick="$('#f14').charPicker('open')">open()</button>
+        <button class="btn" onclick="$('#f14').charPicker('close')">close()</button>
+        <button class="btn" onclick="$('#f14').charPicker('toggle')">toggle()</button>
+        <button class="btn" onclick="destroyDemo()">destroy()</button>
+        <button class="btn" onclick="reinitDemo()">reinit()</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="code">
+    <div class="code-head"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
+    <pre><code>$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>({
+  dataUrl: <span class="str">'/js/data.json'</span>,
+  onOpen:  <span class="kw">function</span>() { console.<span class="fn">log</span>(<span class="str">'opened'</span>); },
+  onClose: <span class="kw">function</span>() { console.<span class="fn">log</span>(<span class="str">'closed'</span>); },
+  onSelect: <span class="kw">function</span>(char, name) {
+    console.<span class="fn">log</span>(<span class="str">'picked'</span>, char, name);
+  },
+  onDataError: <span class="kw">function</span>(err) {
+    console.<span class="fn">error</span>(<span class="str">'data error'</span>, err);
+  }
+});
+
+<span class="com">// Методы</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'open'</span>);        <span class="com">// открыть</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'open'</span>, btn); <span class="com">// открыть с якорем</span>
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'close'</span>);
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'toggle'</span>);
+$(<span class="str">'#my-field'</span>).<span class="fn">charPicker</span>(<span class="str">'destroy'</span>);</code></pre>
+  </div>
+</section>
+
+
+<!-- ─── 9. ОПЦИИ ─────────────────────────────────────────────────── -->
+<section id="s9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>Все опции</h2></div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Опция</th><th>Тип</th><th>По умолч.</th><th>Описание</th></tr>
+      </thead>
       <tbody>
-        <tr>
-          <td><code>charPicker(options)</code></td>
-          <td>Инициализация. Повторный вызов на том же элементе — игнорируется.</td>
-          <td>нет эффекта</td>
-        </tr>
-        <tr>
-          <td><code>charPicker('open')</code></td>
-          <td>Открывает попап, фокусирует поиск, пересчитывает позицию.</td>
-          <td>нет эффекта</td>
-        </tr>
-        <tr>
-          <td><code>charPicker('close')</code></td>
-          <td>Закрывает попап, скрывает тултип, обновляет <code>aria-expanded</code>.</td>
-          <td>нет эффекта</td>
-        </tr>
-        <tr>
-          <td><code>charPicker('destroy')</code></td>
-          <td>Снимает обработчики, удаляет DOM-элементы, возвращает <code>input</code> в исходное место.</td>
-          <td>ошибка</td>
-        </tr>
+        <tr><td><code>dataUrl</code></td><td>string</td><td><code>null</code></td><td>URL JSON-файла с группами символов. При отсутствии используются встроенные данные (~197 символов).</td></tr>
+        <tr><td><code>data</code></td><td>Array</td><td><code>null</code></td><td>Массив групп напрямую — без AJAX. Приоритет выше <code>dataUrl</code>.</td></tr>
+        <tr><td><code>panels</code></td><td>Array</td><td><code>null</code></td><td>Фильтр групп по id. Например: <code>['smileys', 'math']</code>. <code>null</code> — все группы.</td></tr>
+        <tr><td><code>trigger</code></td><td>string|false|Element|Function</td><td><code>'auto'</code></td><td><code>'auto'</code> — кнопка создаётся автоматически. <code>false</code> — без кнопки. Element/jQuery — готовая кнопка. Function(openFn) — колбэк.</td></tr>
+        <tr><td><code>anchor</code></td><td>Element|string</td><td><code>null</code></td><td>Статический якорь позиционирования. Используется если якорь не меняется от вызова к вызову.</td></tr>
+        <tr><td><code>position</code></td><td>string</td><td><code>'auto'</code></td><td>Вертикаль попапа: <code>'auto'</code> | <code>'top'</code> | <code>'bottom'</code>. <code>auto</code> — выбирает сторону где больше места.</td></tr>
+        <tr><td><code>align</code></td><td>string</td><td><code>'field'</code></td><td>Горизонталь попапа: <code>'field'</code> — по краю поля ввода, <code>'anchor'</code> — по краю кнопки, <code>'cursor'</code> — по точке клика.</td></tr>
+        <tr><td><code>closeOnPick</code></td><td>boolean</td><td><code>false</code></td><td>Закрывать диалог после выбора символа. <code>false</code> — остаётся открытым для ввода нескольких символов.</td></tr>
+        <tr><td><code>recentMax</code></td><td>number</td><td><code>32</code></td><td>Максимальное количество символов в разделе «Недавние». Сохраняется в <code>localStorage</code>.</td></tr>
+        <tr><td><code>onOpen</code></td><td>Function</td><td><code>null</code></td><td>Вызывается при открытии диалога. <code>this</code> = DOM-элемент поля.</td></tr>
+        <tr><td><code>onClose</code></td><td>Function</td><td><code>null</code></td><td>Вызывается при закрытии. <code>this</code> = DOM-элемент поля.</td></tr>
+        <tr><td><code>onSelect</code></td><td>Function(char, name)</td><td><code>null</code></td><td>Вызывается при выборе символа. Аргументы: символ Unicode, его название.</td></tr>
+        <tr><td><code>onDataError</code></td><td>Function(Error)</td><td><code>null</code></td><td>Вызывается при ошибке загрузки <code>dataUrl</code>.</td></tr>
+        <tr><td><code>coreJs</code></td><td>string</td><td>см. код</td><td>URL файла <code>charPicker.core.js</code>.</td></tr>
+        <tr><td><code>coreCss</code></td><td>string</td><td>см. код</td><td>URL файла <code>charPicker.core.css</code>.</td></tr>
+        <tr><td><code>debug</code></td><td>boolean</td><td><code>false</code></td><td>Подробный лог в консоль: open, close, pick, posPopup, docClick, winScroll.</td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- ОПЦИИ                                                      -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="options" class="section">
-  <div class="section-header">
-    <span class="section-num">04</span>
-    <h2 class="section-title">Опции</h2>
-  </div>
+<!-- ─── 10. DOM ───────────────────────────────────────────────────── -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span><h2>DOM-структура</h2></div>
 
-  <div class="code-block" style="margin-bottom:24px">
-    <div class="code-block-head"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
-    <pre><code>$(<span class="str">'#field'</span>).<span class="fn">charPicker</span>({
-  recentMax : <span class="num">32</span>,         <span class="com">// макс. символов в «Недавних»</span>
-  position  : <span class="str">'auto'</span>,    <span class="com">// 'auto' | 'top' | 'bottom'</span>
-  panels    : <span class="kw">null</span>,      <span class="com">// null = все; ['smileys'] = только эти; [] = ни одной</span>
-  onOpen    : <span class="kw">null</span>,      <span class="com">// function(), this = el</span>
-  onClose   : <span class="kw">null</span>,      <span class="com">// function(), this = el</span>
-  onSelect  : <span class="kw">null</span>       <span class="com">// function(char, name), this = el</span>
-});</code></pre>
-  </div>
-
-  <div class="opt-grid">
-    <div class="opt-card">
-      <div class="opt-name">recentMax</div>
-      <span class="opt-type">number</span><span class="opt-default">32</span>
-      <div class="opt-desc">Максимум символов в панели «Недавние». При превышении самые старые вытесняются новыми.</div>
-    </div>
-    <div class="opt-card">
-      <div class="opt-name">position</div>
-      <span class="opt-type">'auto' | 'top' | 'bottom'</span><span class="opt-default">'auto'</span>
-      <div class="opt-desc"><b>auto</b> — вниз если достаточно места, вверх если снизу тесно. <b>top/bottom</b> — принудительно. Всегда прижимается к правому краю экрана если не умещается слева.</div>
-    </div>
-    <div class="opt-card">
-      <div class="opt-name">panels</div>
-      <span class="opt-type">Array | null</span><span class="opt-default">null</span>
-      <div class="opt-desc"><b>null</b> — показать все группы. <b>['smileys','math']</b> — только эти. <b>[]</b> — ни одной (только «Недавние» если есть). Панель recent управляется автоматически.</div>
-    </div>
-    <div class="opt-card">
-      <div class="opt-name">onOpen</div>
-      <span class="opt-type">function | null</span><span class="opt-default">null</span>
-      <div class="opt-desc">Вызывается при открытии попапа. <code>this</code> — DOM-элемент input/textarea.</div>
-    </div>
-    <div class="opt-card">
-      <div class="opt-name">onClose</div>
-      <span class="opt-type">function | null</span><span class="opt-default">null</span>
-      <div class="opt-desc">Вызывается при закрытии попапа. <code>this</code> — DOM-элемент input/textarea.</div>
-    </div>
-    <div class="opt-card">
-      <div class="opt-name">onSelect</div>
-      <span class="opt-type">function | null</span><span class="opt-default">null</span>
-      <div class="opt-desc">Вызывается после вставки символа. Аргументы: <code>function(char, name)</code>. <code>this.value</code> уже содержит обновлённое значение.</div>
+  <div class="info blue">
+    <span>ℹ️</span>
+    <div>
+      Ядро (<code>charPicker.core.js</code>) не создаёт wrap вокруг поля и не трогает DOM снаружи попапа.
+      В режиме <code>trigger:'auto'</code> wrap и кнопку создаёт <code>jquery.charPicker.v3.js</code>.
+      Попап (<code>.jcp__popup</code>) добавляется в <code>&lt;body&gt;</code> с <code>position:fixed</code>.
     </div>
   </div>
 
-  <div style="margin-top:20px">
-    <div class="code-block">
-      <div class="code-block-head"><span class="code-lang">onSelect — пример</span></div>
-      <pre><code>$(<span class="str">'#editor'</span>).<span class="fn">charPicker</span>({
-  <span class="fn">onSelect</span>: <span class="kw">function</span>(char, name) {
-    <span class="com">// char — вставленный символ:  '😀'</span>
-    <span class="com">// name — его составное имя:   'grinning smile улыбка'</span>
-    <span class="com">// this  — DOM-элемент input/textarea</span>
-    <span class="com">// this.value уже обновлено</span>
-    console.<span class="fn">log</span>(<span class="str">'Вставлен:'</span>, char, <span class="str">'—'</span>, name);
-  }
-});</code></pre>
-    </div>
+  <p style="font-size:13px;font-weight:600;margin:16px 0 10px">trigger:'auto' — поле обёртывается в .jcp</p>
+  <div class="dom">
+<span class="dd">&lt;!-- jquery.charPicker.v3.js оборачивает поле --&gt;</span>
+<span class="dt">&lt;span</span> <span class="dc">class</span>=<span class="da">"jcp"</span><span class="dt">&gt;</span>
+  <span class="dt">&lt;input</span> <span class="dc">type</span>=<span class="da">"text"</span> <span class="dc">class</span>=<span class="da">"charPicker"</span><span class="dt">&gt;</span>
+  <span class="dt">&lt;button</span> <span class="dc">class</span>=<span class="da">"jcp__trigger"</span> <span class="dc">aria-haspopup</span>=<span class="da">"dialog"</span><span class="dt">&gt;</span>…svg…<span class="dt">&lt;/button&gt;</span>
+<span class="dt">&lt;/span&gt;</span>
+  </div>
+
+  <p style="font-size:13px;font-weight:600;margin:16px 0 10px">trigger: Element — wrap не создаётся</p>
+  <div class="dom">
+<span class="dd">&lt;!-- Ваша кнопка остаётся где была --&gt;</span>
+<span class="dt">&lt;button</span> <span class="dc">id</span>=<span class="da">"my-btn"</span> <span class="dc">aria-haspopup</span>=<span class="da">"dialog"</span> <span class="dc">aria-expanded</span>=<span class="da">"false"</span><span class="dt">&gt;</span>☺<span class="dt">&lt;/button&gt;</span>
+<span class="dt">&lt;textarea</span> <span class="dc">id</span>=<span class="da">"my-field"</span><span class="dt">&gt;&lt;/textarea&gt;</span>
+  </div>
+
+  <p style="font-size:13px;font-weight:600;margin:16px 0 10px">Попап в &lt;body&gt; — position:fixed</p>
+  <div class="dom">
+<span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__popup jcp__popup--pos-bottom"</span>
+     <span class="dc">role</span>=<span class="da">"dialog"</span> <span class="dc">aria-modal</span>=<span class="da">"true"</span><span class="dt">&gt;</span>
+
+  <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__search"</span><span class="dt">&gt;</span>
+    <span class="dt">&lt;input</span> <span class="dc">class</span>=<span class="da">"jcp__search-input"</span> <span class="dc">type</span>=<span class="da">"search"</span> <span class="dc">placeholder</span>=<span class="da">"Поиск…"</span><span class="dt">&gt;</span>
+  <span class="dt">&lt;/div&gt;</span>
+
+  <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__tabs"</span> <span class="dc">role</span>=<span class="da">"tablist"</span><span class="dt">&gt;</span>
+    <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__tab jcp__tab--active"</span> <span class="dc">data-group</span>=<span class="da">"smileys"</span><span class="dt">&gt;</span>😀<span class="dt">&lt;/div&gt;</span>
+    <span class="dd">…</span>
+  <span class="dt">&lt;/div&gt;</span>
+
+  <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__body"</span><span class="dt">&gt;</span>
+    <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__subgroup"</span><span class="dt">&gt;</span>
+      <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__subgroup-title"</span><span class="dt">&gt;</span>Счастье<span class="dt">&lt;/div&gt;</span>
+      <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__grid"</span><span class="dt">&gt;</span>
+        <span class="dt">&lt;div</span> <span class="dc">class</span>=<span class="da">"jcp__char"</span> <span class="dc">role</span>=<span class="da">"button"</span> <span class="dc">tabindex</span>=<span class="da">"0"</span>
+             <span class="dc">data-char</span>=<span class="da">"😀"</span> <span class="dc">aria-label</span>=<span class="da">"улыбка grinning face"</span><span class="dt">&gt;</span>😀<span class="dt">&lt;/div&gt;</span>
+        <span class="dd">…</span>
+      <span class="dt">&lt;/div&gt;</span>
+    <span class="dt">&lt;/div&gt;</span>
+  <span class="dt">&lt;/div&gt;</span>
+
+<span class="dt">&lt;/div&gt;</span>
+
+<span class="dd">&lt;!-- Тултип — один на страницу, position:fixed --&gt;</span>
+<span class="dt">&lt;div</span> <span class="dc">id</span>=<span class="da">"jcp-tooltip"</span> <span class="dc">class</span>=<span class="da">"jcp__tooltip"</span> <span class="dc">role</span>=<span class="da">"tooltip"</span><span class="dt">&gt;&lt;/div&gt;</span>
   </div>
 </section>
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- ПАНЕЛИ                                                     -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="panels" class="section">
-  <div class="section-header">
-    <span class="section-num">05</span>
-    <h2 class="section-title">Панели символов</h2>
-  </div>
-
-  <div class="panels-grid" style="margin-bottom:24px">
-    <div class="panel-chip">
-      <div class="panel-chip-icon">😀</div>
-      <div><div class="panel-chip-id">smileys</div><div class="panel-chip-name">Смайлы и эмоции</div></div>
-      <div class="panel-chip-count">41</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">👋</div>
-      <div><div class="panel-chip-id">gestures</div><div class="panel-chip-name">Жесты рук</div></div>
-      <div class="panel-chip-count">29</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">🌿</div>
-      <div><div class="panel-chip-id">nature</div><div class="panel-chip-name">Природа и животные</div></div>
-      <div class="panel-chip-count">44</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">🍕</div>
-      <div><div class="panel-chip-id">food</div><div class="panel-chip-name">Еда и напитки</div></div>
-      <div class="panel-chip-count">34</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">💯</div>
-      <div><div class="panel-chip-id">symbols_emo</div><div class="panel-chip-name">Символьные эмодзи</div></div>
-      <div class="panel-chip-count">35</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">→</div>
-      <div><div class="panel-chip-id">arrows</div><div class="panel-chip-name">Стрелки и указатели</div></div>
-      <div class="panel-chip-count">30</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">∑</div>
-      <div><div class="panel-chip-id">math</div><div class="panel-chip-name">Математика и греч.</div></div>
-      <div class="panel-chip-count">42</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">«</div>
-      <div><div class="panel-chip-id">typography</div><div class="panel-chip-name">Типографика</div></div>
-      <div class="panel-chip-count">33</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">€</div>
-      <div><div class="panel-chip-id">currency</div><div class="panel-chip-name">Знаки валют</div></div>
-      <div class="panel-chip-count">25</div>
-    </div>
-    <div class="panel-chip">
-      <div class="panel-chip-icon">À</div>
-      <div><div class="panel-chip-id">diacritics</div><div class="panel-chip-name">Диакритика</div></div>
-      <div class="panel-chip-count">59</div>
-    </div>
-  </div>
-
-  <div class="code-block">
-    <div class="code-block-head"><span class="code-lang">примеры фильтрации</span></div>
-    <pre><code><span class="com">// Только эмодзи</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>({ panels: [<span class="str">'smileys'</span>, <span class="str">'gestures'</span>, <span class="str">'nature'</span>, <span class="str">'food'</span>, <span class="str">'symbols_emo'</span>] });
-
-<span class="com">// Только спецсимволы (без эмодзи)</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>({ panels: [<span class="str">'arrows'</span>, <span class="str">'math'</span>, <span class="str">'typography'</span>, <span class="str">'currency'</span>, <span class="str">'diacritics'</span>] });
-
-<span class="com">// Поле ввода цены — только валюты</span>
-$(<span class="str">'#price'</span>).<span class="fn">charPicker</span>({ panels: [<span class="str">'currency'</span>] });
-
-<span class="com">// Текстовый редактор — типографика</span>
-$(<span class="str">'#editor'</span>).<span class="fn">charPicker</span>({ panels: [<span class="str">'typography'</span>, <span class="str">'arrows'</span>] });
-
-<span class="com">// Ни одной группы (только «Недавние» если есть история)</span>
-$(<span class="str">'#f'</span>).<span class="fn">charPicker</span>({ panels: [] });
-
-<span class="com">// Панель recent управляется автоматически — указывать не нужно</span></code></pre>
-  </div>
-</section>
+</div><!-- /page -->
+</div><!-- /w -->
 
 
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- ПОИСК И РАСКЛАДКА                                          -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="search" class="section">
-  <div class="section-header">
-    <span class="section-num">06</span>
-    <h2 class="section-title">Поиск и умная раскладка</h2>
-  </div>
-
-  <p style="margin-bottom:20px; color:var(--c-muted); max-width:680px">
-    Каждый символ имеет составное двуязычное имя. Поиск ищет подстроку без учёта регистра, debounce 200 мс.
-    Главная особенность — <strong>автоматическая коррекция раскладки клавиатуры</strong>.
-  </p>
-
-  <div class="code-block" style="margin-bottom:20px">
-    <div class="code-block-head"><span class="code-lang">формат имён символов</span></div>
-    <pre><code>😀  <span class="str">'grinning smile улыбка'</span>
-→   <span class="str">'вправо right arrow'</span>
-©   <span class="str">'авторское право copyright'</span>
-€   <span class="str">'евро euro'</span>
-À   <span class="str">'a с акутом a with grave'</span></code></pre>
-  </div>
-
-  <div style="background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r); padding:24px; margin-bottom:20px">
-    <p style="font-size:13px; font-weight:600; margin-bottom:16px">Алгоритм коррекции раскладки</p>
-    <div class="search-demo">
-      <div class="search-case">
-        <div class="search-case-label">Хотел «сердце», набрал в EN</div>
-        <div>
-          <span class="search-case-typed">cthlwt</span>
-          <span class="search-case-arrow">→</span>
-          <span class="search-case-result">сердце</span>
-        </div>
-        <div style="font-size:11px;color:var(--c-muted);margin-top:4px">Нашёл: ❤️ 🧡 💛 💚 💙</div>
-      </div>
-      <div class="search-case">
-        <div class="search-case-label">Хотел «arrow», набрал в RU</div>
-        <div>
-          <span class="search-case-typed">фккщц</span>
-          <span class="search-case-arrow">→</span>
-          <span class="search-case-result">arrow</span>
-        </div>
-        <div style="font-size:11px;color:var(--c-muted);margin-top:4px">Нашёл: → ← ↑ ↓ ↔ ↕ …</div>
-      </div>
-      <div class="search-case">
-        <div class="search-case-label">Хотел «улыбка», набрал в EN</div>
-        <div>
-          <span class="search-case-typed">ekmirrf</span>
-          <span class="search-case-arrow">→</span>
-          <span class="search-case-result">улыбка</span>
-        </div>
-        <div style="font-size:11px;color:var(--c-muted);margin-top:4px">Нашёл: 😀 😊 😄 😁 …</div>
-      </div>
-      <div class="search-case">
-        <div class="search-case-label">Правильный ввод «heart»</div>
-        <div>
-          <span class="search-case-typed">heart</span>
-          <span class="search-case-arrow">→</span>
-          <span class="search-case-result">heart</span>
-        </div>
-        <div style="font-size:11px;color:var(--c-muted);margin-top:4px">Нашёл напрямую: ❤️ 🧡 💕 …</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="code-block">
-    <div class="code-block-head"><span class="code-lang">реализация · _queryVariants</span></div>
-    <pre><code><span class="com">// Таблица QWERTY → ЙЦУКЕН (ГОСТ Р 52659–2006)</span>
-<span class="kw">var</span> _LAT_TO_CYR = { <span class="str">'q'</span>:<span class="str">'й'</span>, <span class="str">'w'</span>:<span class="str">'ц'</span>, <span class="str">'e'</span>:<span class="str">'у'</span>, <span class="str">'r'</span>:<span class="str">'к'</span>, <span class="com">/* … */</span> };
-
-<span class="com">// Обратная таблица строится автоинверсией — не дублируется вручную</span>
-<span class="kw">var</span> _CYR_TO_LAT = (<span class="kw">function</span>() {
-  <span class="kw">var</span> map = {};
-  <span class="kw">for</span> (<span class="kw">var</span> lat <span class="kw">in</span> _LAT_TO_CYR) map[_LAT_TO_CYR[lat]] = lat;
-  <span class="kw">return</span> map;
-}());
-
-<span class="com">// Варианты запроса: [оригинал, lat→cyr, cyr→lat]</span>
-<span class="kw">function</span> <span class="fn">_queryVariants</span>(q) {
-  <span class="kw">var</span> variants = [q];
-  <span class="kw">var</span> asCyr = <span class="fn">_convertLayout</span>(q, _LAT_TO_CYR);
-  <span class="kw">if</span> (asCyr !== q) variants.<span class="fn">push</span>(asCyr);
-  <span class="kw">var</span> asLat = <span class="fn">_convertLayout</span>(q, _CYR_TO_LAT);
-  <span class="kw">if</span> (asLat !== q && asLat !== asCyr) variants.<span class="fn">push</span>(asLat);
-  <span class="kw">return</span> variants; <span class="com">// 1–3 варианта, без дубликатов</span>
-}</code></pre>
-  </div>
-</section>
-
-
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- BEM                                                        -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="bem" class="section">
-  <div class="section-header">
-    <span class="section-num">07</span>
-    <h2 class="section-title">BEM и стили</h2>
-  </div>
-
-  <div class="info-box blue" style="margin-bottom:24px">
-    <span>🎨</span>
-    <div>Стили написаны по методологии <strong>BEM</strong>. Блок <code>.jcp</code> — пространство имён плагина (jQuery + charPicker). Все классы начинаются с <code>jcp__</code> или <code>jcp__…--…</code> — конфликты с вашими стилями исключены.</div>
-  </div>
-
-  <div class="bem-grid" style="margin-bottom:24px">
-    <div class="bem-row"><span class="bem-class bem-block">.jcp</span><span class="bem-desc">Блок — корневая обёртка поля + кнопки</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__trigger</span><span class="bem-desc">Кнопка открытия попапа</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__trigger--active</span><span class="bem-desc">Попап открыт</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__popup</span><span class="bem-desc">Всплывающий пикер</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__popup--pos-bottom</span><span class="bem-desc">Попап под полем</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__popup--pos-top</span><span class="bem-desc">Попап над полем</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__popup--pos-right</span><span class="bem-desc">Прижат к правому краю экрана</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__search</span><span class="bem-desc">Панель поиска (обёртка)</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__search-input</span><span class="bem-desc">Поле ввода запроса</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__tabs</span><span class="bem-desc">Строка вкладок групп</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__tab</span><span class="bem-desc">Одна вкладка-иконка</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__tab--active</span><span class="bem-desc">Активная вкладка</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__body</span><span class="bem-desc">Прокручиваемая область символов</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__section-title</span><span class="bem-desc">Заголовок секции</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__grid</span><span class="bem-desc">Flex-сетка символов</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__char</span><span class="bem-desc">Одна ячейка символа</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__char--sym</span><span class="bem-desc">Не-эмодзи символ (serif-шрифт)</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__tooltip</span><span class="bem-desc">Тултип с именем (fixed)</span></div>
-    <div class="bem-row"><span class="bem-class bem-mod">.jcp__tooltip--visible</span><span class="bem-desc">Тултип показан</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__empty</span><span class="bem-desc">Заглушка «ничего не найдено»</span></div>
-    <div class="bem-row"><span class="bem-class bem-elem">.jcp__layout-hint</span><span class="bem-desc">Подсказка о конвертации раскладки</span></div>
-  </div>
-
-  <div class="code-block">
-    <div class="code-block-head"><span class="code-lang">кастомная тема через SCSS</span><button class="copy-btn" onclick="copyCode(this)">копировать</button></div>
-    <pre><code><span class="com">// Тёмная тема с янтарным акцентом</span>
-<span class="key">$cp-color-bg</span>        : <span class="str">#1c1c2e</span>;
-<span class="key">$cp-color-bg-panel</span>  : <span class="str">#25253a</span>;
-<span class="key">$cp-color-text</span>      : <span class="str">#e2e2f0</span>;
-<span class="key">$cp-color-border</span>    : <span class="str">#3a3a55</span>;
-<span class="key">$cp-color-accent</span>    : <span class="str">#f59e0b</span>;
-<span class="key">$cp-color-accent-dark</span>: <span class="str">#d97706</span>;
-<span class="key">$cp-popup-width</span>     : <span class="num">360px</span>;
-<span class="key">$cp-char-size</span>       : <span class="num">38px</span>;
-
-@<span class="kw">import</span> <span class="str">'jquery.charPicker'</span>;</code></pre>
-  </div>
-</section>
-
-
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- АРХИТЕКТУРА                                               -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="arch" class="section">
-  <div class="section-header">
-    <span class="section-num">08</span>
-    <h2 class="section-title">Архитектура</h2>
-  </div>
-
-  <div class="arch-grid" style="margin-bottom:24px">
-
-    <div class="arch-card">
-      <div class="arch-card-title">Глобальная история</div>
-      <div class="arch-item"><span class="arch-item-name">_globalRecent</span><span class="arch-item-desc">Массив {c,n} — выбранные символы</span></div>
-      <div class="arch-item"><span class="arch-item-name">_globalRecentMax</span><span class="arch-item-desc">Лимит (из опции recentMax)</span></div>
-      <div class="arch-item"><span class="arch-item-name">globalAddRecent()</span><span class="arch-item-desc">Добавить/поднять в истории</span></div>
-    </div>
-
-    <div class="arch-card">
-      <div class="arch-card-title">Данные символов</div>
-      <div class="arch-item"><span class="arch-item-name">GROUPS[]</span><span class="arch-item-desc">10 групп + пустая 'recent'</span></div>
-      <div class="arch-item"><span class="arch-item-name">{id, label, icon}</span><span class="arch-item-desc">Метаданные группы</span></div>
-      <div class="arch-item"><span class="arch-item-name">chars: [{c,n}]</span><span class="arch-item-desc">~372 символа, кавычки через \uXXXX</span></div>
-    </div>
-
-    <div class="arch-card">
-      <div class="arch-card-title">Утилиты</div>
-      <div class="arch-item"><span class="arch-item-name">insertAtCursor()</span><span class="arch-item-desc">Вставка в selectionStart..End</span></div>
-      <div class="arch-item"><span class="arch-item-name">debounce(fn, ms)</span><span class="arch-item-desc">Задержка выполнения</span></div>
-    </div>
-
-    <div class="arch-card">
-      <div class="arch-card-title">Модуль раскладки</div>
-      <div class="arch-item"><span class="arch-item-name">_LAT_TO_CYR</span><span class="arch-item-desc">QWERTY → ЙЦУКЕН (ГОСТ)</span></div>
-      <div class="arch-item"><span class="arch-item-name">_CYR_TO_LAT</span><span class="arch-item-desc">Автоинверсия _LAT_TO_CYR</span></div>
-      <div class="arch-item"><span class="arch-item-name">_convertLayout()</span><span class="arch-item-desc">Посимвольная конвертация</span></div>
-      <div class="arch-item"><span class="arch-item-name">_queryVariants()</span><span class="arch-item-desc">→ [оригинал, lat→cyr, cyr→lat]</span></div>
-    </div>
-
-    <div class="arch-card">
-      <div class="arch-card-title">CharPicker — внутренние</div>
-      <div class="arch-item"><span class="arch-item-name">_uid()</span><span class="arch-item-desc">Уникальный namespace событий</span></div>
-      <div class="arch-item"><span class="arch-item-name">_buildPopup()</span><span class="arch-item-desc">Создать и заполнить попап</span></div>
-      <div class="arch-item"><span class="arch-item-name">_selectTab(gid)</span><span class="arch-item-desc">Переключить активную вкладку</span></div>
-      <div class="arch-item"><span class="arch-item-name">_renderGroup(gid)</span><span class="arch-item-desc">Отрисовать группу символов</span></div>
-      <div class="arch-item"><span class="arch-item-name">_makeGrid(chars)</span><span class="arch-item-desc">Сетка .jcp__char</span></div>
-      <div class="arch-item"><span class="arch-item-name">_doSearch(query)</span><span class="arch-item-desc">Поиск с вариантами раскладки</span></div>
-      <div class="arch-item"><span class="arch-item-name">_positionPopup()</span><span class="arch-item-desc">Вычислить top/left</span></div>
-    </div>
-
-    <div class="arch-card">
-      <div class="arch-card-title">CharPicker — публичные</div>
-      <div class="arch-item"><span class="arch-item-name">open()</span><span class="arch-item-desc">Открыть попап</span></div>
-      <div class="arch-item"><span class="arch-item-name">close()</span><span class="arch-item-desc">Закрыть попап</span></div>
-      <div class="arch-item"><span class="arch-item-name">destroy()</span><span class="arch-item-desc">Полный демонтаж</span></div>
-      <div class="arch-item"><span class="arch-item-name">$.fn.charPicker</span><span class="arch-item-desc">Диспетчер jQuery-плагина</span></div>
-    </div>
-
-  </div>
-
-  <p style="font-size:13px; font-weight:600; margin-bottom:12px">DOM-структура попапа</p>
-  <div class="dom-tree">
-<span class="dom-com">&lt;!-- .jcp вставляется вместо input в DOM-потоке --&gt;</span>
-<span class="dom-tag">&lt;span</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp"</span><span class="dom-tag">&gt;</span>
-  <span class="dom-tag">&lt;input</span> <span class="dom-cls">type</span>=<span class="dom-attr">"text"</span><span class="dom-tag"> …&gt;</span>
-  <span class="dom-tag">&lt;button</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__trigger"</span><span class="dom-tag">&gt;&lt;svg…&gt;&lt;/button&gt;</span>
-<span class="dom-tag">&lt;/span&gt;</span>
-
-<span class="dom-com">&lt;!-- Попап в &lt;body&gt; — абсолютное позиционирование --&gt;</span>
-<span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__popup jcp__popup--pos-bottom"</span> <span class="dom-cls">role</span>=<span class="dom-attr">"dialog"</span><span class="dom-tag">&gt;</span>
-  <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__search"</span><span class="dom-tag">&gt;</span>
-    <span class="dom-tag">&lt;input</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__search-input"</span> <span class="dom-cls">type</span>=<span class="dom-attr">"search"</span><span class="dom-tag">&gt;</span>
-  <span class="dom-tag">&lt;/div&gt;</span>
-  <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__tabs"</span> <span class="dom-cls">role</span>=<span class="dom-attr">"tablist"</span><span class="dom-tag">&gt;</span>
-    <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__tab jcp__tab--active"</span> <span class="dom-cls">data-group</span>=<span class="dom-attr">"smileys"</span><span class="dom-tag">&gt;</span>😀<span class="dom-tag">&lt;/div&gt;</span>
-    <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__tab"</span> <span class="dom-cls">data-group</span>=<span class="dom-attr">"arrows"</span><span class="dom-tag">&gt;</span>→<span class="dom-tag">&lt;/div&gt;</span>
-    <span class="dom-text">…</span>
-  <span class="dom-tag">&lt;/div&gt;</span>
-  <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__body"</span><span class="dom-tag">&gt;</span>
-    <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__section-title"</span><span class="dom-tag">&gt;</span>Результаты: 5<span class="dom-tag">&lt;/div&gt;</span>
-    <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__layout-hint"</span><span class="dom-tag">&gt;</span>ℹ️ Раскладка: «сердце»<span class="dom-tag">&lt;/div&gt;</span>
-    <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__grid"</span><span class="dom-tag">&gt;</span>
-      <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__char"</span> <span class="dom-cls">role</span>=<span class="dom-attr">"button"</span><span class="dom-tag">&gt;</span>😀<span class="dom-tag">&lt;/div&gt;</span>
-      <span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__char jcp__char--sym"</span> <span class="dom-cls">role</span>=<span class="dom-attr">"button"</span><span class="dom-tag">&gt;</span>©<span class="dom-tag">&lt;/div&gt;</span>
-    <span class="dom-tag">&lt;/div&gt;</span>
-  <span class="dom-tag">&lt;/div&gt;</span>
-<span class="dom-tag">&lt;/div&gt;</span>
-
-<span class="dom-com">&lt;!-- Тултип в &lt;body&gt; — fixed --&gt;</span>
-<span class="dom-tag">&lt;div</span> <span class="dom-cls">class</span>=<span class="dom-attr">"jcp__tooltip"</span> <span class="dom-cls">role</span>=<span class="dom-attr">"tooltip"</span><span class="dom-tag">&gt;</span>grinning smile улыбка<span class="dom-tag">&lt;/div&gt;</span>
-  </div>
-</section>
-
-
-<!-- ─────────────────────────────────────────────────────────── -->
-<!-- БЕЗОПАСНОСТЬ                                               -->
-<!-- ─────────────────────────────────────────────────────────── -->
-<section id="security" class="section">
-  <div class="section-header">
-    <span class="section-num">09</span>
-    <h2 class="section-title">Безопасность</h2>
-  </div>
-
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-bottom:20px">
-    <div class="info-box green">
-      <span>🔒</span>
-      <div><strong>XSS исключён.</strong> Все символы вставляются через <code>document.createTextNode()</code> — HTML-теги экранируются как текст. <code>innerHTML</code> с пользовательскими данными не используется нигде.</div>
-    </div>
-    <div class="info-box green">
-      <span>🚫</span>
-      <div><strong>Нет eval.</strong> В плагине нет ни одного вызова <code>eval()</code>, <code>new Function()</code> или динамической компиляции кода. Все DOM-узлы создаются через jQuery с константными строками.</div>
-    </div>
-    <div class="info-box green">
-      <span>⚡</span>
-      <div><strong>Изоляция событий.</strong> Каждый экземпляр использует уникальный jQuery namespace (<code>click.cp.cp4k9m2x</code>). <code>destroy()</code> снимает только свои обработчики — соседние экземпляры не затрагиваются.</div>
-    </div>
-    <div class="info-box green">
-      <span>✏️</span>
-      <div><strong>Экранирование кавычек.</strong> Символы вроде <code>'</code> <code>'</code> <code>"</code> <code>«</code> заданы через <code>\uXXXX</code> — синтаксические конфликты с JS-строками исключены при парсинге файла.</div>
-    </div>
-  </div>
-
-  <div class="code-block">
-    <div class="code-block-head"><span class="code-lang">createTextNode — защита от XSS</span></div>
-    <pre><code><span class="com">// В _makeGrid: символ → DOM через createTextNode</span>
-$ch[<span class="num">0</span>].<span class="fn">appendChild</span>(document.<span class="fn">createTextNode</span>(item.c));
-
-<span class="com">// Даже если item.c = '&lt;script&gt;alert(1)&lt;/script&gt;' —</span>
-<span class="com">// браузер отобразит это как текст, не выполнит</span>
-
-<span class="com">// В insertAtCursor: вставка через .value, не innerHTML</span>
-el.value = el.value.<span class="fn">slice</span>(<span class="num">0</span>, start) + text + el.value.<span class="fn">slice</span>(end);</code></pre>
-  </div>
-</section>
-
-
-</div><!-- /.layout -->
-</div><!-- /.wrap -->
-
-<!-- ══ FOOTER ═════════════════════════════════════════════════ -->
-<footer class="site-footer">
-  <div class="wrap">
-    <div class="footer-inner">
-      <div class="footer-logo">jquery.charPicker</div>
-      <div>v1.2.0 · MIT License · jQuery ≥ 1.9 · ES5 · BEM</div>
-      <div>~372 символа · 10 групп · EN↔RU раскладка</div>
+<!-- ══ FOOTER ══════════════════════════════════════════════════════ -->
+<footer class="ftr">
+  <div class="w">
+    <div class="ftr-inner">
+      <div class="ftr-logo">jquery.charPicker</div>
+      <div>v3.1.0 · MIT License · jQuery ≥ 1.9 · ES5 · BEM</div>
+      <div>charPicker.core.js + jquery.charPicker.v3.js</div>
     </div>
   </div>
 </footer>
 
-<!-- ══ СКРИПТЫ ════════════════════════════════════════════════ -->
+
+<!-- ══ SCRIPTS ═════════════════════════════════════════════════════ -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="jquery.charPicker.js"></script>
+<script src="jquery.charPicker.v3.js"></script>
 <script>
-$(function () {
+$(function() {
 
-  // Вспомогательная функция логирования события
-  function logEvent(logId, char, name) {
-    var $log = $('#' + logId);
-    $log.text('\u2713 «' + char + '»  ' + name)
-        .addClass('flash');
-    setTimeout(function () { $log.removeClass('flash'); }, 600);
+  /* ── Утилита: лог события в карточке ── */
+  function log(id, char, name) {
+    var $el = $('#' + id);
+    $el.text('✓ «' + char + '»  ' + name).addClass('flash');
+    setTimeout(function() { $el.removeClass('flash'); }, 600);
+  }
+  function logText(id, text) {
+    var $el = $('#' + id);
+    $el.text(text).addClass('flash');
+    setTimeout(function() { $el.removeClass('flash'); }, 600);
   }
 
-  // ── Инициализация демо-полей ──────────────────────────────
-  $('#demo-all').charPicker({
-    onSelect: function (c, n) { logEvent('log-all', c, n); }
+  // dataUrl — путь к полному набору символов.
+  // Если файл недоступен (локальное открытие file://, или файл не найден),
+  // плагин автоматически использует встроенный тестовый набор (~197 символов).
+  var DATA = 'charpicker-data.min.json';
+
+  /* ── 1. Базовый ── */
+  $('#f1').charPicker({
+    dataUrl: DATA,
+    onSelect: function(c, n) { log('log1', c, n); }
+  });
+  $('#f2').charPicker({
+    dataUrl: DATA,
+    onSelect: function(c, n) { log('log2', c, n); }
   });
 
-  $('#demo-emoji').charPicker({
-    panels: ['smileys', 'gestures', 'nature', 'food', 'symbols_emo'],
-    onSelect: function (c, n) { logEvent('log-emoji', c, n); }
+  /* ── 2. Фильтр панелей ── */
+  $('#f3').charPicker({
+    dataUrl: DATA,
+    panels: ['smileys', 'gestures', 'nature', 'symbols_emo'],
+    onSelect: function(c, n) { log('log3', c, n); }
+  });
+  $('#f4').charPicker({
+    dataUrl: DATA,
+    panels: ['math'],
+    onSelect: function(c, n) { log('log4', c, n); }
   });
 
-  $('#demo-sym').charPicker({
-    panels: ['arrows', 'math', 'typography', 'currency', 'diacritics'],
-    onSelect: function (c, n) { logEvent('log-sym', c, n); }
+  /* ── 3. Внешний триггер ── */
+  $('#f5').charPicker({
+    dataUrl: DATA,
+    trigger: $('#btn5'),
+    onSelect: function(c, n) { log('log5', c, n); }
+  });
+  $('#f6').charPicker({
+    dataUrl: DATA,
+    trigger: false,
+    onSelect: function(c, n) { log('log6', c, n); }
   });
 
-  $('#demo-typo').charPicker({
-    panels: ['typography', 'currency'],
-    onSelect: function (c, n) { logEvent('log-typo', c, n); }
+  /* ── 4. Тулбар ── */
+  $('#f7').charPicker({
+    dataUrl: DATA,
+    trigger: $('#btn-toolbar'),
+    onSelect: function(c, n) { log('log7', c, n); }
   });
 
-  $('#demo-area').charPicker({
-    onSelect: function (c, n) { logEvent('log-area', c, n); }
+  /* ── 5. Колбэк trigger ── */
+  $('#f8').charPicker({
+    dataUrl: DATA,
+    trigger: function(open) {
+      var $btn = $('<button class="btn btn-pri" type="button">☺ Символ (колбэк)</button>');
+      $btn.on('click', function(e) { open(e.currentTarget); });
+      $('#cb-toolbar').append($btn);
+    },
+    onSelect: function(c, n) { log('log8', c, n); }
   });
 
-  $('#demo-ctrl').charPicker({
-    onOpen  : function () { logEvent('log-ctrl', '📂', 'открыт'); },
-    onClose : function () { logEvent('log-ctrl', '📁', 'закрыт'); },
-    onSelect: function (c, n) { logEvent('log-ctrl', c, n); }
+  /* ── 6. closeOnPick ── */
+  $('#f9').charPicker({
+    dataUrl: DATA,
+    closeOnPick: false,
+    onSelect: function(c, n) { log('log9', c, n); }
+  });
+  $('#f10').charPicker({
+    dataUrl: DATA,
+    closeOnPick: true,
+    onSelect: function(c, n) { log('log10', c, n); }
   });
 
-  // ── Навигация: подсветка активного пункта ────────────────
-  var $navLinks = $('.nav-link');
+  /* ── 7. align / position ── */
+  $('#f11').charPicker({
+    dataUrl: DATA,
+    align: 'field',
+    onSelect: function(c, n) { log('log11', c, n); }
+  });
+  $('#f12').charPicker({
+    dataUrl: DATA,
+    align: 'anchor',
+    onSelect: function(c, n) { log('log12', c, n); }
+  });
+  $('#f13').charPicker({
+    dataUrl: DATA,
+    position: 'top',
+    onSelect: function(c, n) { log('log13', c, n); }
+  });
+
+  /* ── 8. API / колбэки ── */
+  $('#f14').charPicker({
+    dataUrl: DATA,
+    onOpen:  function() { logText('log14', '📂 onOpen'); },
+    onClose: function() { logText('log14', '📁 onClose'); },
+    onSelect: function(c, n) { log('log14', c, n); }
+  });
+
+  /* ── Активная секция в nav ── */
+  var $navLinks = $('.nav-a');
   var $sections = $('section[id]');
-
   function updateNav() {
-    var scrollY = window.scrollY + 80;
-    var current = '';
-    $sections.each(function () {
-      if (scrollY >= $(this).offset().top) {
-        current = $(this).attr('id');
-      }
+    var y = window.scrollY + 80, cur = '';
+    $sections.each(function() {
+      if (y >= $(this).offset().top) cur = $(this).attr('id');
     });
-    $navLinks.removeClass('active');
-    $navLinks.filter('[href="#' + current + '"]').addClass('active');
+    $navLinks.removeClass('on');
+    $navLinks.filter('[href="#' + cur + '"]').addClass('on');
   }
-
   $(window).on('scroll', updateNav);
   updateNav();
 
 });
 
-// ── Управление демо-полем ────────────────────────────────────
-var _ctrlDestroyed = false;
+/* ── Демо destroy / reinit ── */
+var _destroyed = false;
 
 function destroyDemo() {
-  $('#demo-ctrl').charPicker('destroy');
-  _ctrlDestroyed = true;
-  $('#log-ctrl').text('destroy() вызван — плагин удалён');
+  $('#f14').charPicker('destroy');
+  _destroyed = true;
+  $('#log14').text('destroy() — плагин удалён').addClass('flash');
+  setTimeout(function() { $('#log14').removeClass('flash'); }, 800);
 }
 
 function reinitDemo() {
-  if (_ctrlDestroyed) {
-    $('#demo-ctrl').charPicker({
-      onOpen  : function () { logEventGlobal('log-ctrl', '📂', 'открыт'); },
-      onClose : function () { logEventGlobal('log-ctrl', '📁', 'закрыт'); },
-      onSelect: function (c, n) { logEventGlobal('log-ctrl', c, n); }
-    });
-    _ctrlDestroyed = false;
-    $('#log-ctrl').text('reinit() — плагин пересоздан');
-  }
+  if (!_destroyed) return;
+  $('#f14').charPicker({
+    dataUrl: 'charpicker-data.min.json',
+    onOpen:  function() { $('#log14').text('📂 onOpen').addClass('flash'); setTimeout(function(){ $('#log14').removeClass('flash'); }, 600); },
+    onClose: function() { $('#log14').text('📁 onClose').addClass('flash'); setTimeout(function(){ $('#log14').removeClass('flash'); }, 600); },
+    onSelect: function(c, n) {
+      $('#log14').text('✓ «' + c + '»  ' + n).addClass('flash');
+      setTimeout(function(){ $('#log14').removeClass('flash'); }, 600);
+    }
+  });
+  _destroyed = false;
+  $('#log14').text('reinit() — плагин пересоздан').addClass('flash');
+  setTimeout(function() { $('#log14').removeClass('flash'); }, 800);
 }
 
-function logEventGlobal(logId, char, name) {
-  var $log = $('#' + logId);
-  $log.text('\u2713 «' + char + '»  ' + name)
-      .addClass('flash');
-  setTimeout(function () { $log.removeClass('flash'); }, 600);
-}
-
-// ── Копирование кода ─────────────────────────────────────────
+/* ── Копирование кода ── */
 function copyCode(btn) {
-  var code = btn.closest('.code-block').querySelector('pre').innerText;
-  navigator.clipboard.writeText(code).then(function () {
+  var code = btn.closest('.code').querySelector('pre').innerText;
+  navigator.clipboard.writeText(code).then(function() {
     var orig = btn.textContent;
     btn.textContent = 'скопировано ✓';
-    setTimeout(function () { btn.textContent = orig; }, 1500);
+    setTimeout(function() { btn.textContent = orig; }, 1500);
   });
 }
 </script>
