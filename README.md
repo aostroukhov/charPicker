@@ -1,636 +1,326 @@
-# ☺ jquery.charPicker
+# jquery.charPicker v3
 
-> jQuery-плагин для вставки спецсимволов и эмодзи в поля `input` и `textarea`.  
-> Эмулирует на десктопных браузерах функциональность эмодзи-клавиатуры мобильных устройств.
+jQuery-плагин для вставки спецсимволов и эмодзи в поля `input` и `textarea`.
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue)](#)
-[![jQuery](https://img.shields.io/badge/jQuery-%E2%89%A51.9-orange)](#)
-[![License](https://img.shields.io/badge/license-MIT-green)](#лицензия)
-[![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#)
-[![CSS: BEM](https://img.shields.io/badge/CSS-BEM-blueviolet)](#bem-и-стили)
-[![ES5](https://img.shields.io/badge/JS-ES5-yellow)](#поддержка-браузеров)
+**Ядро (`charPicker.core.js`) не зависит от jQuery** и загружается лениво — только при первом открытии диалога. Страница подключает только лёгкий адаптер (~3 КБ).
 
 ---
 
-## Содержание
+## Файлы
 
-- [Возможности](#возможности)
-- [Быстрый старт](#быстрый-старт)
-- [Установка](#установка)
-- [API](#api)
-- [Опции](#опции)
-- [Панели символов](#панели-символов)
-- [Поиск и умная раскладка](#поиск-и-умная-раскладка)
-- [Глобальная история](#глобальная-история-недавние)
-- [BEM и стили](#bem-и-стили)
-- [Архитектура](#архитектура)
-- [Примеры](#примеры)
-- [Безопасность](#безопасность)
-- [Поддержка браузеров](#поддержка-браузеров)
-- [Структура файлов](#структура-файлов)
-- [Лицензия](#лицензия)
-
----
-
-## Возможности
-
-| | Возможность | Описание |
+| Файл | Когда подключать | Размер |
 |---|---|---|
-| 🔍 | **Поиск** | По русскому и латинскому имени символа, debounce 200 мс |
-| ⌨️ | **Умная раскладка** | Находит символы даже при вводе в неправильной раскладке EN↔RU |
-| 🕐 | **Недавние** | Глобальная история, единая для всех полей на странице |
-| 📁 | **10 панелей** | ~372 символа: эмодзи, типографика, математика, валюты, диакритика |
-| 🎛 | **Фильтр панелей** | Включение/отключение групп через опцию `panels` |
-| 📍 | **Умное позиционирование** | Попап открывается вверх/вниз и прижимается к краям экрана |
-| 🖱 | **Тултипы** | Всплывающее название символа при наведении |
-| ♿ | **Доступность** | `role="dialog"`, `role="tab"`, `aria-label`, `aria-expanded`, Tab / Enter / Escape |
-| 🔒 | **Безопасность** | Нет `eval()`, нет `innerHTML` с данными — XSS исключён |
-| 🎨 | **BEM CSS** | Именование по BEM, блок `.jcp`, без конфликтов с вашими стилями |
-| 🪶 | **Без зависимостей** | Только jQuery ≥ 1.9, данные встроены в JS-файл |
+| `jquery.charPicker.v3.js` | С загрузкой страницы | ~3 КБ |
+| `charPicker.core.js` | Автоматически при первом open() | ~40 КБ |
+| `charPicker.core.css` | Автоматически при первом open() | ~5 КБ |
+| `charpicker-data.min.json` | По запросу через `dataUrl` | ~170 КБ |
 
 ---
 
 ## Быстрый старт
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="jquery.charPicker.css">
-</head>
-<body>
-  <input type="text" id="field" placeholder="Введите текст…">
+<!-- Подключение -->
+<script src="/js/jquery.loadBundle.js"></script>
+<script src="/js/jquery.charPicker.v3.js"></script>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="jquery.charPicker.js"></script>
-  <script>
-    $('#field').charPicker();
-  </script>
-</body>
-</html>
+<!-- Инициализация -->
+<script>
+$('.my-field').charPicker({
+  dataUrl: '/js/charpicker-data.min.json'
+});
+</script>
 ```
 
-После инициализации справа от поля появится кнопка ☺. По клику открывается попап с поиском, вкладками групп и сеткой символов. Клик по символу вставляет его в позицию курсора поля.
+Пути к `charPicker.core.js` и `charPicker.core.css` вычисляются автоматически — они должны лежать в той же папке что и `jquery.charPicker.v3.js`.
 
 ---
 
-## Установка
+## Режимы trigger
 
-### Вручную
+### `trigger: 'auto'` — кнопка создаётся автоматически
 
-Скачайте два файла и подключите в проект:
-
-```
-jquery.charPicker.js    — плагин
-jquery.charPicker.css   — стили
+```js
+$('#my-field').charPicker({ dataUrl: '/js/data.json' });
 ```
 
-```html
-<link rel="stylesheet" href="jquery.charPicker.css">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="jquery.charPicker.js"></script>
+Плагин оборачивает поле в `<span class="jcp">` и добавляет кнопку-триггер справа.
+
+### `trigger: false` — только внешний вызов через API
+
+```js
+$('#my-field').charPicker({ trigger: false, dataUrl: '/js/data.json' });
+
+// Открытие с позиционированием у кнопки:
+$('#my-btn').on('click', function() {
+  $('#my-field').charPicker('open', this);
+});
 ```
 
-Файл CSS подключается в `<head>`, JS-файл плагина — **после** jQuery.
+### `trigger: Element | jQuery` — готовая кнопка
+
+```js
+$('#my-field').charPicker({
+  trigger: $('#toolbar .emoji-btn'),  // плагин вешает click сам
+  dataUrl: '/js/data.json'
+});
+```
+
+Попап позиционируется относительно переданной кнопки.
+
+### `trigger: function(openFn)` — колбэк
+
+```js
+$('#my-field').charPicker({
+  trigger: function(open) {
+    // this = DOM-элемент поля
+    var $btn = $('<button>☺</button>');
+    $btn.on('click', function(e) { open(e.currentTarget); });
+    $(this).closest('.form').find('.toolbar').append($btn);
+  },
+  dataUrl: '/js/data.json'
+});
+```
+
+---
+
+## Все опции
+
+| Опция | Тип | По умолч. | Описание |
+|---|---|---|---|
+| `dataUrl` | string | `null` | URL JSON-файла с данными. При ошибке — fallback на встроенные данные |
+| `data` | Array | `null` | Готовый массив групп. Приоритет выше `dataUrl` |
+| `panels` | Array | `null` | Фильтр групп по id: `['smileys', 'math']`. `null` — все группы |
+| `trigger` | см. выше | `'auto'` | Режим создания кнопки-триггера |
+| `anchor` | Element | `null` | Статический якорь позиционирования |
+| `position` | string | `'auto'` | Вертикаль попапа: `'auto'` \| `'top'` \| `'bottom'` |
+| `align` | string | `'field'` | Горизонталь попапа: `'field'` \| `'anchor'` \| `'cursor'` |
+| `closeOnPick` | boolean | `false` | Закрывать диалог после выбора символа |
+| `recentMax` | number | `32` | Макс. символов в разделе «Недавние» |
+| `onOpen` | Function | `null` | Вызывается при открытии. `this` = DOM-элемент поля |
+| `onClose` | Function | `null` | Вызывается при закрытии. `this` = DOM-элемент поля |
+| `onSelect` | Function(char, name) | `null` | Вызывается при выборе символа |
+| `onDataError` | Function(Error) | `null` | Вызывается при ошибке загрузки `dataUrl` |
+| `coreJs` | string | авто | URL `charPicker.core.js` |
+| `coreCss` | string | авто | URL `charPicker.core.css` |
+| `debug` | boolean | `false` | Подробный лог в консоль |
+
+### Опция `align`
+
+| Значение | Поведение |
+|---|---|
+| `'field'` | Левый край попапа совпадает с левым краем поля ввода |
+| `'anchor'` | Левый край попапа совпадает с левым краем кнопки/якоря |
+| `'cursor'` | Попап открывается у точки клика (для MouseEvent/TouchEvent) |
 
 ---
 
 ## API
 
-### Инициализация
+```js
+// Открыть диалог
+$('#my-field').charPicker('open');
 
-```javascript
-$(selector).charPicker();            // настройки по умолчанию
-$(selector).charPicker(options);     // с объектом опций
+// Открыть с позиционированием у элемента
+$('#my-field').charPicker('open', document.getElementById('my-btn'));
+
+// Закрыть
+$('#my-field').charPicker('close');
+
+// Переключить (open/close)
+$('#my-field').charPicker('toggle');
+
+// Удалить плагин
+$('#my-field').charPicker('destroy');
 ```
 
-Плагин можно применить к нескольким полям сразу — каждый экземпляр независим, история «Недавних» общая:
+### Прямой вызов CharPicker (без jQuery)
 
-```javascript
-$('input[type="text"], textarea').charPicker();
-```
+```js
+var cp = new CharPicker(inputElement, {
+  dataUrl: '/js/data.json',
+  onSelect: function(char, name) { console.log(char, name); }
+});
 
-Повторный вызов `.charPicker()` на уже инициализированном элементе **игнорируется** — двойная инициализация невозможна.
-
-### Методы
-
-Методы вызываются строкой первым аргументом:
-
-```javascript
-$(selector).charPicker('open');      // открыть попап программно
-$(selector).charPicker('close');     // закрыть попап программно
-$(selector).charPicker('destroy');   // полностью удалить плагин
-```
-
-**`open`** — открывает попап и фокусирует строку поиска. Позиционирование пересчитывается при каждом открытии. Если уже открыт — вызов игнорируется.
-
-**`close`** — закрывает попап, снимает тултип, обновляет `aria-expanded`. Если уже закрыт — игнорируется.
-
-**`destroy`** — полностью демонтирует плагин: снимает все обработчики (только свои), удаляет из DOM обёртку `.jcp`, попап `.jcp__popup` и тултип `.jcp__tooltip`, возвращает `input`/`textarea` в исходное место в DOM, удаляет данные экземпляра из jQuery `.data()`. После `destroy` элемент можно заново инициализировать.
-
-### Прямой доступ к экземпляру
-
-```javascript
-var inst = $('#field').data('cp-instance');
-if (inst) inst.close();
+cp.open(anchorElement);  // Element | jQuery | MouseEvent | TouchEvent | null
+cp.close();
+cp.toggle(anchor);
+cp.destroy();
 ```
 
 ---
 
-## Опции
+## Формат данных
 
-```javascript
-$(selector).charPicker({
-  recentMax : 32,       // макс. символов в «Недавних»
-  position  : 'auto',  // 'auto' | 'top' | 'bottom'
-  panels    : null,    // null = все; ['smileys','math'] = только эти; [] = ни одной
-  onOpen    : null,    // function(), this = el
-  onClose   : null,    // function(), this = el
-  onSelect  : null     // function(char, name), this = el
-});
+```json
+{
+  "version": "2.1.0",
+  "groups": [
+    {
+      "id": "smileys",
+      "label": "Смайлы",
+      "labelEn": "Smileys",
+      "icon": "😀",
+      "subgroups": [
+        {
+          "label": "Счастье",
+          "labelEn": "Happy",
+          "chars": [
+            { "c": "😀", "n": "улыбка grinning face" },
+            { "c": "😂", "n": "слёзы радости tears of joy" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "math",
+      "label": "Математика",
+      "labelEn": "Math",
+      "icon": "∑",
+      "chars": [
+        { "c": "±", "n": "плюс минус plus minus" }
+      ]
+    }
+  ]
+}
 ```
 
-### Таблица всех опций
+Группы могут иметь либо `subgroups`, либо прямой массив `chars` — не оба сразу.
 
-| Опция | Тип | По умолчанию | Описание |
-|---|---|---|---|
-| `recentMax` | `number` | `32` | Максимум символов в «Недавних». При превышении старые вытесняются |
-| `position` | `string` | `'auto'` | Вертикальное расположение попапа: `'auto'` `'top'` `'bottom'` |
-| `panels` | `Array\|null` | `null` | Список id групп. `null` — все. `[]` — ни одной |
-| `onOpen` | `function` | `null` | При открытии попапа. `this` — целевой DOM-элемент |
-| `onClose` | `function` | `null` | При закрытии попапа. `this` — целевой DOM-элемент |
-| `onSelect` | `function` | `null` | При выборе символа: `function(char, name)`. `this` — DOM-элемент |
+---
 
-### position
+## Поиск
 
-| Значение | Поведение |
+Поиск работает по полю `n` (название символа). Поддерживается:
+
+- **Прямой поиск** — по названию на любом языке: `"сердце"`, `"heart"`
+- **Поиск символом** — `"♥"` найдёт символ напрямую
+- **Конвертация раскладки EN↔RU** — `"cbvdjk"` найдёт `"символ"` (ввели латиницей в русской раскладке)
+- **Нормализация ё→е** — `"ёлка"` и `"елка"` дают одинаковый результат
+
+---
+
+## Клавиатура
+
+| Клавиша | Действие |
 |---|---|
-| `'auto'` | Вниз если достаточно места, вверх если снизу тесно |
-| `'bottom'` | Всегда под полем |
-| `'top'` | Всегда над полем |
+| `Tab` | Перемещение по элементам диалога |
+| `↓` в поле поиска | Переход на первый символ в гриде |
+| `← ↑ → ↓` в гриде | Навигация по символам с учётом числа колонок |
+| `↑` / `←` с первого символа | Возврат на поле поиска |
+| `Enter` / `Space` | Выбор символа |
+| `Escape` | Закрыть диалог |
 
-При любом значении попап дополнительно прижимается к правому краю окна, если не умещается слева.
+---
 
-### onSelect
+## История «Недавних»
 
-```javascript
-$('#field').charPicker({
-  onSelect: function(char, name) {
-    // char — вставленный символ,  например '😀'
-    // name — его составное имя,   например 'grinning smile улыбка'
-    // this  — DOM-элемент input/textarea
-    // this.value уже содержит обновлённое значение
-    console.log('Вставлен:', char, '—', name);
-  }
-});
+Выбранные символы сохраняются в `localStorage['jcp_recent']`. История общая для всех экземпляров на странице (один origin). В приватном режиме или при ограничениях iframe работает только в памяти — без ошибок.
+
+Ограничить размер истории:
+```js
+$('#my-field').charPicker({ recentMax: 16 });
 ```
 
 ---
 
-## Панели символов
+## BEM-классы
 
-### Справочник панелей
-
-| id | Иконка | Содержимое | Символов |
-|---|---|---|---|
-| `smileys` | 😀 | Смайлы, эмоции, выражения лица | 41 |
-| `gestures` | 👋 | Жесты рук | 29 |
-| `nature` | 🌿 | Животные, растения, природа, погода | 44 |
-| `food` | 🍕 | Еда, напитки, фрукты, овощи | 34 |
-| `symbols_emo` | 💯 | Сердца, звёзды, знаки, цветные круги | 35 |
-| `arrows` | → | Стрелки всех видов, указатели | 30 |
-| `math` | ∑ | Математика, греческий алфавит, дроби | 42 |
-| `typography` | « | Кавычки, тире, типографические знаки | 33 |
-| `currency` | € | Знаки валют мира | 25 |
-| `diacritics` | À | Диакритические символы (À, é, ñ, ü, š…) | 59 |
-
-**Итого:** ~372 символа в 10 группах.
-
-> Панель `recent` («Недавние») управляется автоматически — появляется после первого выбора символа. Указывать её в `panels` не нужно.
-
-### Примеры фильтрации
-
-```javascript
-$('#f').charPicker({ panels: null });                                        // все
-$('#f').charPicker({ panels: ['smileys','gestures','nature','food','symbols_emo'] }); // только эмодзи
-$('#f').charPicker({ panels: ['arrows','math','typography','currency','diacritics'] }); // без эмодзи
-$('#price').charPicker({ panels: ['currency'] });                            // одна группа
-$('#editor').charPicker({ panels: ['typography', 'arrows'] });               // типографика
-$('#f').charPicker({ panels: [] });                                          // ни одной
-```
+| Класс | Описание |
+|---|---|
+| `.jcp` | Обёртка вокруг поля (только `trigger:'auto'`) |
+| `.jcp__trigger` | Кнопка открытия (только `trigger:'auto'`) |
+| `.jcp__trigger--active` | Попап открыт |
+| `.jcp__trigger--loading` | Идёт загрузка ядра |
+| `.jcp__popup` | Всплывающий диалог |
+| `.jcp__popup--pos-bottom` | Попап открывается вниз |
+| `.jcp__popup--pos-top` | Попап открывается вверх |
+| `.jcp__popup--pos-right` | Попап сдвинут к правому краю |
+| `.jcp__search-input` | Поле поиска |
+| `.jcp__tabs` | Панель вкладок |
+| `.jcp__tab` | Одна вкладка |
+| `.jcp__tab--active` | Активная вкладка |
+| `.jcp__body` | Прокручиваемая область с символами |
+| `.jcp__char` | Один символ |
+| `.jcp__char--sym` | Не-эмодзи символ (serif-шрифт) |
+| `.jcp__tooltip` | Тултип с именем символа |
+| `.jcp__tooltip--visible` | Тултип виден |
 
 ---
 
-## Поиск и умная раскладка
+## SCSS-переменные
 
-### Имена символов
-
-Каждый символ имеет составное двуязычное имя — поиск работает по обоим языкам:
-
-```
-😀  →  'grinning smile улыбка'
-→   →  'вправо right arrow'
-©   →  'авторское право copyright'
-```
-
-Поиск — подстрока в имени без учёта регистра, debounce 200 мс.
-
-### Алгоритм коррекции раскладки
-
-Пользователь часто набирает запрос в неправильной раскладке. Плагин строит до трёх вариантов каждого запроса:
-
-```
-[0]  оригинал      — как ввёл пользователь
-[1]  lat → cyr     — если набирал русское в EN-раскладке
-[2]  cyr → lat     — если набирал английское в RU-раскладке
-```
-
-| Хотел найти | Набрал (раскладка) | Нашёл |
-|---|---|---|
-| `сердце` | `cthlwt` (EN) | ❤️ и похожие |
-| `arrow` | `фккщц` (RU) | → ← ↑ ↓ и др. |
-| `улыбка` | `ekmirrf` (EN) | 😀 😊 😄 |
-
-Когда сработала конвертация — появляется подсказка «ℹ️ Раскладка: «сердце»».
-
-Таблицы ЙЦУКЕН←→QWERTY построены по ГОСТ Р 52659–2006. Обратная таблица строится автоматической инверсией прямой — рассинхронизация невозможна.
-
----
-
-## Глобальная история («Недавние»)
-
-История **единая для всех полей** на странице. Выбор в поле A появляется в «Недавних» поля B.
-
-```
-input#title    ──┐
-textarea#body  ──┼──→  _globalRecent: [ '😀', '→', '©', … ]
-input#comment  ──┘
-```
-
-Новый символ: дубликат удаляется → символ в начало → хвост обрезается по `recentMax`.
-
-История in-memory — сбрасывается при перезагрузке. Для персистентности:
-
-```javascript
-$('#field').charPicker({
-  onSelect: function(char, name) {
-    var saved = JSON.parse(localStorage.getItem('jcp-recent') || '[]');
-    saved = [{ c: char, n: name }].concat(
-      saved.filter(function(x) { return x.c !== char; })
-    ).slice(0, 32);
-    localStorage.setItem('jcp-recent', JSON.stringify(saved));
-  }
-});
-```
-
----
-
-## BEM и стили
-
-### Методология
-
-Стили плагина написаны по **BEM**. Блок `.jcp` — пространство имён плагина (jQuery + charPicker), специфичный и не конфликтующий:
-
-```
-Блок:        .jcp
-Элемент:     .jcp__trigger   .jcp__popup   .jcp__tab   .jcp__char   …
-Модификатор: .jcp__trigger--active   .jcp__tab--active   .jcp__char--sym   …
-```
-
-### Полная карта классов
-
-| Класс | Тип BEM | Назначение |
-|---|---|---|
-| `.jcp` | Блок | Корневая обёртка поля + кнопки |
-| `.jcp__trigger` | Элемент | Кнопка открытия попапа |
-| `.jcp__trigger--active` | Модификатор | Попап открыт |
-| `.jcp__popup` | Элемент | Всплывающий пикер |
-| `.jcp__popup--pos-bottom` | Модификатор | Попап под полем |
-| `.jcp__popup--pos-top` | Модификатор | Попап над полем |
-| `.jcp__popup--pos-right` | Модификатор | Выравнивание по правому краю экрана |
-| `.jcp__search` | Элемент | Панель поиска (обёртка) |
-| `.jcp__search-input` | Элемент | Поле ввода запроса |
-| `.jcp__tabs` | Элемент | Строка вкладок групп |
-| `.jcp__tab` | Элемент | Одна вкладка-иконка |
-| `.jcp__tab--active` | Модификатор | Активная вкладка |
-| `.jcp__body` | Элемент | Прокручиваемая область символов |
-| `.jcp__section-title` | Элемент | Заголовок секции |
-| `.jcp__grid` | Элемент | Flex-сетка символов |
-| `.jcp__char` | Элемент | Одна ячейка символа |
-| `.jcp__char--sym` | Модификатор | Не-эмодзи символ (serif-шрифт) |
-| `.jcp__tooltip` | Элемент | Тултип с именем символа (fixed) |
-| `.jcp__tooltip--visible` | Модификатор | Тултип показан |
-| `.jcp__empty` | Элемент | Заглушка «ничего не найдено» |
-| `.jcp__layout-hint` | Элемент | Подсказка о конвертации раскладки |
-
-### Переменные SCSS
+Переопределите до `@import`:
 
 ```scss
-// Размеры
-$cp-popup-width        : 320px   !default;
-$cp-popup-body-height  : 240px   !default;
-$cp-char-size          : 34px    !default;
-$cp-char-font-size     : 20px    !default;
-$cp-char-font-size-sym : 16px    !default;
-$cp-trigger-size       : 2.2em   !default;
-$cp-border-radius      : 10px    !default;
-$cp-border-radius-sm   : 6px     !default;
-$cp-z-popup            : 9999    !default;
-$cp-z-tooltip          : 99999   !default;
-
-// Цвета
-$cp-color-bg           : #fff        !default;
-$cp-color-bg-panel     : #f8f9fb     !default;
-$cp-color-accent       : #5b9bd5     !default;
-$cp-color-accent-dark  : #2d6da8     !default;
-$cp-color-text         : #333        !default;
-$cp-color-border       : #c8cfd8     !default;
-$cp-color-tooltip-bg   : #1a2233     !default;
-```
-
-### Кастомная тема
-
-```scss
-// Тёмная тема
-$cp-color-bg        : #1c1c2e;
-$cp-color-bg-panel  : #25253a;
-$cp-color-text      : #e2e2f0;
-$cp-color-border    : #3a3a55;
-$cp-color-accent    : #f59e0b;
-$cp-color-accent-dark: #d97706;
-
-@import 'jquery.charPicker';
-```
-
-### Компиляция
-
-```bash
-sass jquery.charPicker.scss jquery.charPicker.css
-sass --style=compressed jquery.charPicker.scss jquery.charPicker.min.css
-npx sass jquery.charPicker.scss jquery.charPicker.css
-```
-
----
-
-## Архитектура
-
-### Структура JS-файла
-
-```
-;(function ($) {
-  'use strict';
-
-  ┌── Глобальная история ──────────────────────────────────────────┐
-  │   _globalRecent []          массив {c, n} — выбранные символы │
-  │   _globalRecentMax          лимит (из опции recentMax)         │
-  │   globalAddRecent(item)     добавить/поднять в истории         │
-  └────────────────────────────────────────────────────────────────┘
-
-  ┌── Данные символов ─────────────────────────────────────────────┐
-  │   GROUPS []                 10 групп + 'recent' (пустой)       │
-  │   { id, label, icon, chars: [{ c, n }, …] }                   │
-  │   ~372 символа, кавычки и спецсимволы через \uXXXX             │
-  └────────────────────────────────────────────────────────────────┘
-
-  ┌── Утилиты ─────────────────────────────────────────────────────┐
-  │   insertAtCursor(el, text)  вставка в selectionStart..End      │
-  │   debounce(fn, delay)       задержка с clearTimeout            │
-  └────────────────────────────────────────────────────────────────┘
-
-  ┌── Модуль умного поиска ────────────────────────────────────────┐
-  │   _LAT_TO_CYR {}            QWERTY → ЙЦУКЕН (ГОСТ Р 52659)    │
-  │   _CYR_TO_LAT {}            автоинверсия _LAT_TO_CYR (IIFE)   │
-  │   _convertLayout(s, map)    посимвольная конвертация строки    │
-  │   _queryVariants(q)         → [оригинал, lat→cyr, cyr→lat]    │
-  └────────────────────────────────────────────────────────────────┘
-
-  ┌── CharPicker ──────────────────────────────────────────────────┐
-  │   constructor(el, options)                                     │
-  │   ├── _filterGroups()       фильтр GROUPS по опции panels      │
-  │   └── _init()               DOM-сборка, привязка событий       │
-  │                                                                │
-  │   _uid()                    уникальный namespace событий       │
-  │   _buildPopup()             создать и заполнить попап          │
-  │   _posTooltip(e)            позиция тултипа по курсору         │
-  │   _selectTab(gid)           переключить активную вкладку       │
-  │   _renderGroup(gid)         отрисовать группу символов         │
-  │   _sectionTitle(text)       создать DOM-заголовок секции       │
-  │   _makeGrid(chars)          создать сетку .jcp__char           │
-  │   _doSearch(query)          поиск с вариантами раскладки       │
-  │   _insertChar(c, n)         вставить символ, обновить историю  │
-  │   _ensureRecentTab()        добавить вкладку «Недавние»        │
-  │   _positionPopup()          вычислить top/left попапа          │
-  │   _toggle()                 open ↔ close                      │
-  │                                                                │
-  │   open()   close()   destroy()   ← публичные методы           │
-  └────────────────────────────────────────────────────────────────┘
-
-  ┌── $.fn.charPicker ─────────────────────────────────────────────┐
-  │   Диспетчер: инициализация или вызов метода по строке          │
-  │   Хранение: $(el).data('cp-instance') → экземпляр CharPicker  │
-  └────────────────────────────────────────────────────────────────┘
-
-}(jQuery));
-```
-
-### Изоляция экземпляров
-
-Каждый экземпляр получает уникальный идентификатор:
-
-```javascript
-this.__uid = 'cp' + Math.random().toString(36).slice(2, 8); // 'cp4k9m2x'
-$(document).on('click.cp.cp4k9m2x', handler);  // привязка
-$(document).off('click.cp.cp4k9m2x');          // снятие в destroy
-```
-
-`destroy()` удаляет **только свои** обработчики — соседние экземпляры не затрагиваются.
-
-### DOM-структура
-
-```html
-<!-- .jcp заменяет исходный input в DOM-потоке -->
-<span class="jcp">
-  <input type="text" …>
-  <button class="jcp__trigger"><svg…></svg></button>
-</span>
-
-<!-- Попап и тултип — в <body>, позиционируются абсолютно/fixed -->
-<div class="jcp__popup jcp__popup--pos-bottom" role="dialog" aria-modal="true">
-  <div class="jcp__search">
-    <input class="jcp__search-input" type="search" …>
-  </div>
-  <div class="jcp__tabs" role="tablist">
-    <div class="jcp__tab jcp__tab--active" data-group="smileys">😀</div>
-    <div class="jcp__tab" data-group="arrows">→</div>
-    …
-  </div>
-  <div class="jcp__body">
-    <div class="jcp__section-title">Результаты: 5</div>
-    <div class="jcp__layout-hint">ℹ️ Раскладка: «сердце»</div>
-    <div class="jcp__grid">
-      <div class="jcp__char" role="button" aria-label="…">😀</div>
-      <div class="jcp__char jcp__char--sym" role="button" aria-label="…">©</div>
-      …
-    </div>
-  </div>
-</div>
-<div class="jcp__tooltip" role="tooltip">grinning smile улыбка</div>
-```
-
----
-
-## Примеры
-
-### Минимальная инициализация
-
-```javascript
-$('#comment').charPicker();
-$('input[type="text"], textarea').charPicker(); // сразу все поля
-```
-
-### Только спецсимволы (без эмодзи)
-
-```javascript
-$('#article').charPicker({
-  panels: ['typography', 'currency', 'arrows', 'math', 'diacritics']
-});
-```
-
-### Чат — эмодзи, компактная история
-
-```javascript
-$('#chat').charPicker({
-  panels   : ['smileys', 'gestures', 'symbols_emo'],
-  recentMax: 16
-});
-```
-
-### Несколько полей с разными наборами
-
-```javascript
-$('#title').charPicker({ panels: ['typography'] });
-$('#body').charPicker();
-$('#price').charPicker({ panels: ['currency', 'math'] });
-```
-
-### Открытие из внешней кнопки
-
-```javascript
-$('#field').charPicker();
-$('#btn').on('click', function () { $('#field').charPicker('open'); });
-```
-
-### Позиционирование над полем
-
-```javascript
-$('#footer-input').charPicker({ position: 'top' });
-```
-
-### Коллбэки
-
-```javascript
-$('#editor').charPicker({
-  onOpen  : function () { console.log('opened:', this.id); },
-  onClose : function () { console.log('closed'); },
-  onSelect: function (char, name) {
-    console.log('char:', char, 'name:', name);
-    analytics.track('char_inserted', { char, name });
-  }
-});
-```
-
-### Уничтожение и переинициализация
-
-```javascript
-$('#f').charPicker('destroy');
-$('#f').charPicker({ panels: ['math'], position: 'top' });
-```
-
-### Закрыть все перед отправкой формы
-
-```javascript
-$('form').on('submit', function () {
-  $(this).find('input, textarea').each(function () {
-    var inst = $(this).data('cp-instance');
-    if (inst) inst.close();
-  });
-});
+$cp-popup-width      : 320px;
+$cp-popup-max-height : 420px;
+$cp-char-size        : 34px;
+$cp-trigger-size     : 2.2em;
+$cp-color-accent     : #5b9bd5;
+$cp-color-bg         : #fff;
+$cp-z-popup          : 9999;
+@import 'charPicker.core';
 ```
 
 ---
 
 ## Безопасность
 
-**XSS-защита** — символы вставляются только через `document.createTextNode()`:
-
-```javascript
-$ch[0].appendChild(document.createTextNode(item.c));  // в сетке попапа
-el.value = el.value.slice(0, start) + text + el.value.slice(end); // в поле
-```
-
-Даже строка `<script>alert(1)</script>` будет отображена как текст, не выполнена.
-
-**Нет eval и Function** — все DOM-элементы создаются через jQuery с константными строками.
-
-**Экранирование кавычек** — типографические символы, совпадающие с кавычками JS (`'`, `'`, `"`, `"`, `«`, `»` и др.), заданы через `\uXXXX`:
-
-```javascript
-{ c: '\u2018', n: 'левая одинарная кавычка left single quote' }
-```
-
-**Изоляция событий** — `destroy()` снимает только свои обработчики через уникальный namespace. Соседние экземпляры и сторонний код не затрагиваются.
-
-**Автозакрытие** — попап закрывается по клику вне него, по `Escape`, при скролле и `resize`.
+- **XSS исключён** — символы вставляются через `document.createTextNode()`, `el.value` — никакого `innerHTML` с пользовательскими данными
+- **Нет eval** — нет `eval()`, `new Function()` или динамической компиляции
+- **Изоляция обработчиков** — `destroy()` снимает только свои обработчики событий
+- **Встроенные данные в Base64** — символы вроде `'`, `"`, `«` не конфликтуют с JS-строками
 
 ---
 
-## Поддержка браузеров
+## Требования
 
-| Браузер | Минимальная версия |
-|---|---|
-| Chrome / Chromium | 60+ |
-| Firefox | 55+ |
-| Safari | 12+ |
-| Edge (Chromium) | 79+ |
-| Opera | 47+ |
-
-**jQuery:** ≥ 1.9. Рекомендуется jQuery 3.x.
-
-**Эмодзи:** зависит от ОС. Windows 10+, macOS 10.14+, Android 9+, iOS 13+ поддерживают Unicode 11+.
-
-> **IE11:** JS написан на ES5 и в целом совместим. Исключение — литералы `'\u{1F600}'` (ES2015 Unicode escape). Для IE11 замените на суррогатные пары: `'\uD83D\uDE00'`.
+- jQuery ≥ 1.9
+- `jquery.loadBundle.js` — для ленивой загрузки (опционально, есть fallback через `<script>`)
+- ES5-совместимый браузер + Promise (IE11 с polyfill)
 
 ---
 
-## Структура файлов
+## Подключение без jquery.loadBundle
 
-```
-jquery.charPicker/
-├── jquery.charPicker.js      # Плагин (ES5, jQuery ≥ 1.9)     ~980 строк
-├── jquery.charPicker.scss    # Исходные стили (SCSS + BEM)     ~380 строк
-├── jquery.charPicker.css     # Скомпилированные стили           ~295 строк
-├── demo.html                 # Интерактивная демо-страница
-└── README.md
+Если `$.loadBundle` недоступен, плагин использует встроенный fallback через динамические теги `<link>` и `<script>`:
+
+```js
+// Всё работает без jquery.loadBundle.js,
+// но ядро загрузится чуть позже из-за отсутствия prefetch CSS
+$('.my-field').charPicker({ dataUrl: '/js/data.json' });
 ```
 
 ---
 
-## Лицензия
+## Локальная разработка (file://)
 
-MIT © 2024
+При открытии через `file://` XHR-запросы заблокированы браузером. Плагин автоматически переключается на встроенный набор данных (~645 символов, 5 групп). Для тестирования с полным набором откройте страницу через локальный веб-сервер (Live Server, `python -m http.server`, etc.).
 
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+---
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Changelog
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
+### v3.1.0
+- `charPicker.core.js` — архитектурно отделён от jQuery: не создаёт кнопок и wrap'ов, управляет только попапом
+- `open(anchor)` — принимает Element, jQuery, MouseEvent, TouchEvent или plain-rect
+- `position:fixed` для попапа — корректное позиционирование при прокрученной странице
+- Опция `align` — горизонтальное выравнивание: `field` | `anchor` | `cursor`
+- Опция `closeOnPick` — управление закрытием после выбора
+- Клавиатурная навигация по гриду символов (стрелки, Enter/Space)
+- Автоопределение пути к файлам ядра по расположению плагина
+- Fallback на встроенные данные при ошибке `dataUrl` (в т.ч. `file://`)
+- Защита от ложного закрытия при скролле после вставки символа
+- Тултип `display:none` когда не виден — не перекрывает страницу
+- Опция `debug:true` — подробный лог событий в консоль
+
+### v3.0.0
+- Разделение на `charPicker.core.js` + `jquery.charPicker.v3.js` (Stub-паттерн)
+- Ленивая загрузка ядра при первом `open()`
+- История «Недавних» сохраняется в `localStorage`
+- Поиск с конвертацией раскладки EN↔RU и нормализацией ё→е
+
+### v2.1.1
+- Встроенные данные в Base64 (без AJAX)
+- Drag-scroll вкладок

@@ -1,0 +1,578 @@
+// ============================================================
+// charPicker.core.scss  v3.1.0
+// Стили для charPicker.core.js + jquery.charPicker.v3.js
+//
+// Архитектура:
+//   charPicker.core.js   — попап, данные, поиск, вставка символа
+//   jquery.charPicker.v3.js — jQuery-адаптер, ленивая загрузка core,
+//                             кнопка-триггер в режиме trigger:'auto'
+//
+// BEM-именование:
+//   Блок:   .jcp
+//   Элемент:
+//     .jcp__trigger       кнопка открытия (только trigger:'auto')
+//     .jcp__popup         всплывающий диалог
+//     .jcp__search        обёртка поля поиска
+//     .jcp__search-input  поле поиска
+//     .jcp__tabs          полоса вкладок (группы символов)
+//     .jcp__tab           одна вкладка
+//     .jcp__body          прокручиваемая область с символами
+//     .jcp__section-title заголовок секции («Недавние», «Результаты: N»)
+//     .jcp__divider       горизонтальная черта между «Недавними» и группой
+//     .jcp__subgroup      подгруппа символов внутри группы
+//     .jcp__subgroup-title заголовок подгруппы
+//     .jcp__grid          flex-сетка символов
+//     .jcp__char          один символ (кнопка)
+//     .jcp__tooltip       всплывающая подсказка с именем символа
+//     .jcp__empty         заглушка «нет символов» / «ничего не найдено»
+//     .jcp__loading       индикатор загрузки данных
+//     .jcp__layout-hint   подсказка о конвертации раскладки при поиске
+//   Модификатор:
+//     .jcp__trigger--active   попап открыт
+//     .jcp__trigger--loading  идёт загрузка core.js/css (первый клик)
+//     .jcp__tab--active       активная вкладка
+//     .jcp__char--sym         не-эмодзи символ (U+0000–00FF, U+2000–27FF)
+//     .jcp__popup--pos-bottom попап раскрывается вниз (по умолчанию)
+//     .jcp__popup--pos-top    попап раскрывается вверх
+//     .jcp__popup--pos-right  попап сдвинут к правому краю экрана
+//     .jcp__tooltip--visible  тултип видим (управляется JS)
+//
+// Тултип (#jcp-tooltip):
+//   Один элемент на всю страницу. JS скрывает его через display:none
+//   когда тултип не нужен — элемент не перекрывает страницу.
+//   При показе JS снимает display:none, затем через rAF добавляет
+//   класс --visible — CSS transition плавно проявляет тултип.
+//   При скрытии JS убирает --visible, затем через 150ms возвращает
+//   display:none (после окончания fade-out transition).
+//
+// Inline-стили в JS:
+//   .jcp и .jcp__trigger в jquery.charPicker.v3.js содержат
+//   минимальные inline-стили чтобы кнопка отображалась корректно
+//   ДО загрузки этого CSS файла. Правила ниже дополняют инлайны:
+//   hover, focus, transitions, анимации, --active, --loading.
+//   Дублирование базовых свойств намеренно — они просто совпадут.
+//
+// Позиционирование попапа:
+//   JS задаёт position:fixed + top/left в window-координатах.
+//   Позиция пересчитывается при каждом open() через rAF.
+//   Опция align контролирует горизонталь:
+//     'field'  — по левому краю поля ввода (default)
+//     'anchor' — по левому краю кнопки/якоря
+//     'cursor' — по точке клика
+//
+// Changelog:
+//   v3.1.0 — popup position:fixed; тултип display:none когда скрыт;
+//             документированы все новые опции (closeOnPick, align);
+//             обновлён комментарий к тултипу
+//   v3.0.2 — откат правок в __subgroup-title; документация кастомного триггера
+//   v3.0.1 — jcp__trigger--loading; inline-стили задокументированы
+//   v3.0.0 — разделение core.js + jquery.charPicker.v3.js
+// ============================================================
+
+
+// ============================================================
+// КАСТОМНЫЙ ТРИГГЕР — примеры использования
+// ============================================================
+//
+// По умолчанию (trigger:'auto') плагин создаёт кнопку .jcp__trigger
+// рядом с полем и оборачивает поле в <span class="jcp">.
+//
+// ── Пример 1: trigger:false — своя кнопка, вызов через API ──
+//
+//   HTML:
+//     <textarea id="comment"></textarea>
+//     <button type="button" id="btn-emoji">☺</button>
+//
+//   JS:
+//     $('#comment').charPicker({ trigger: false, dataUrl: '/js/data.json' });
+//     $('#btn-emoji').on('click', function() {
+//       $('#comment').charPicker('open', this);  // this — якорь позиционирования
+//     });
+//
+//   SCSS: .jcp__trigger не нужен, стилизуем #btn-emoji как угодно
+//
+//
+// ── Пример 2: trigger: Element/jQuery — плагин вешает click сам ─
+//
+//   JS:
+//     $('#comment').charPicker({
+//       trigger: $('#toolbar .btn-emoji'),   // jQuery-объект
+//       dataUrl: '/js/data.json'
+//     });
+//     // Плагин сам повесит click и будет позиционировать по этой кнопке
+//
+//
+// ── Пример 3: trigger: function(openFn) — полный контроль ──
+//
+//   JS:
+//     $('.reply-form__text').charPicker({
+//       trigger: function(open) {
+//         // this = DOM textarea
+//         var $btn = $('<button type="button">☺</button>');
+//         $btn.on('click', function(e) { open(e.currentTarget); });
+//         $(this).closest('.reply-form').find('.toolbar').append($btn);
+//       },
+//       dataUrl: '/js/data.json'
+//     });
+//
+//
+// ── Пример 4: trigger:'auto' + переопределение стилей ──────
+//
+//   SCSS (до @import этого файла):
+//     $cp-color-bg-trigger : transparent;
+//     $cp-color-border      : transparent;
+//     $cp-trigger-size      : 28px;
+//     @import 'charPicker.core';
+//
+//   CSS (после подключения charPicker.core.css):
+//     .jcp__trigger { border-radius: 50%; font-size: 18px; }
+//     .jcp__trigger:hover { background: rgba(0,0,0,.06); }
+//
+// ============================================================
+
+
+// ── Переменные ────────────────────────────────────────────────
+
+// Размеры
+$cp-popup-width          : 320px        !default;
+$cp-popup-max-height     : 420px        !default;  // опора для flex-детей (см. __body)
+$cp-char-size            : 34px         !default;
+$cp-char-font-size       : 20px         !default;  // эмодзи
+$cp-char-font-size-sym   : 16px         !default;  // не-эмодзи символы (--sym)
+$cp-trigger-size         : 2.2em        !default;
+$cp-border-radius        : 10px         !default;  // попап
+$cp-border-radius-sm     : 6px          !default;  // кнопки, поиск, тултип
+
+// z-index
+$cp-z-popup              : 9999         !default;
+$cp-z-tooltip            : 99999        !default;  // поверх попапа
+
+// Цвета фона
+$cp-color-bg             : #fff         !default;
+$cp-color-bg-panel       : #f8f9fb      !default;  // панель вкладок
+$cp-color-bg-trigger     : #f4f6f8      !default;  // кнопка в покое
+$cp-color-bg-trigger-h   : #e8edf2      !default;  // кнопка :hover
+$cp-color-bg-trigger-a   : #dbe8f5      !default;  // кнопка --active (попап открыт)
+$cp-color-bg-char-h      : #e8f0fb      !default;  // символ :hover
+$cp-color-bg-char-act    : #d0e4f5      !default;  // символ :active
+
+// Цвета границ
+$cp-color-border         : #c8cfd8      !default;
+$cp-color-border-panel   : #e8ecf0      !default;  // внутренние разделители
+$cp-color-border-focus   : #5b9bd5      !default;  // поле поиска в фокусе
+
+// Акцент
+$cp-color-accent         : #5b9bd5      !default;
+$cp-color-accent-dark    : #2d6da8      !default;
+
+// Цвета текста
+$cp-color-text           : #333         !default;
+$cp-color-text-tab       : #666         !default;
+$cp-color-text-muted     : #999         !default;  // заголовки секций, «Загрузка»
+$cp-color-text-empty     : #aaa         !default;  // «Ничего не найдено»
+$cp-color-text-trigger   : #555         !default;  // иконка кнопки
+
+$cp-color-subgroup-title : #6b7480      !default;
+$cp-color-divider        : #eaecf0      !default;
+
+// Тултип
+$cp-color-tooltip-bg     : #1a2233      !default;
+$cp-color-tooltip-text   : #fff         !default;
+
+// Типографика
+$cp-font-sym : 'Georgia', 'Times New Roman', serif !default;  // для --sym символов
+
+// Тени
+$cp-shadow-popup     : 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08) !default;
+$cp-shadow-trigger-h : 0 1px 4px rgba(0, 0, 0, 0.12) !default;
+
+
+// ── Миксины ───────────────────────────────────────────────────
+
+// Скрыть полосу прокрутки визуально (функциональность сохраняется)
+@mixin hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+// Тонкая полоса прокрутки (Firefox + WebKit)
+@mixin thin-scrollbar($thumb: #d0d8e4, $track: transparent) {
+  scrollbar-width: thin;
+  scrollbar-color: $thumb $track;
+  &::-webkit-scrollbar        { width: 4px; }
+  &::-webkit-scrollbar-thumb  { background: $thumb; border-radius: 2px; }
+  &::-webkit-scrollbar-track  { background: $track; }
+}
+
+// Запрет выделения текста
+@mixin no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+// Пульсирующая анимация — кнопка при загрузке, индикатор «Загрузка…»
+@mixin loading-pulse($duration: 1.2s) {
+  animation: cp-loading-pulse $duration ease-in-out infinite;
+}
+
+
+// ── Анимации ──────────────────────────────────────────────────
+
+// Попап появляется с лёгким движением вниз
+@keyframes cp-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Пульс для состояния загрузки
+@keyframes cp-loading-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+
+// ============================================================
+// СТИЛИ
+// ============================================================
+
+.jcp {
+  // Обёртка вокруг поля ввода (создаётся только в режиме trigger:'auto').
+  // Базовый layout дублируется inline-стилями в JS (до загрузки CSS).
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  vertical-align: middle;
+
+
+  // ── Кнопка-триггер ────────────────────────────────────────
+  //
+  // Создаётся только в режиме trigger:'auto'.
+  // Базовые свойства (display, размеры, border, bg, color, cursor)
+  // дублируются inline-стилями в jquery.charPicker.v3.js — кнопка
+  // корректно отображается ДО загрузки этого CSS.
+  // Здесь добавляем: transition, hover, focus-visible, --active, --loading.
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $cp-trigger-size;
+    height: $cp-trigger-size;
+    flex: 0 0 auto;
+    margin-left: 4px;
+    padding: 0;
+    border: 1px solid $cp-color-border;
+    border-radius: $cp-border-radius-sm;
+    background: $cp-color-bg-trigger;
+    color: $cp-color-text-trigger;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s;
+    @include no-select;
+
+    // SVG-иконка не должна перехватывать pointer-events
+    svg { display: block; pointer-events: none; }
+
+    &:hover {
+      background: $cp-color-bg-trigger-h;
+      border-color: darken($cp-color-border, 8%);
+      box-shadow: $cp-shadow-trigger-h;
+      color: $cp-color-accent-dark;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $cp-color-accent;
+      outline-offset: 2px;
+    }
+
+    // Попап открыт — кнопка выделена акцентным цветом
+    &--active {
+      background: $cp-color-bg-trigger-a;
+      border-color: $cp-color-accent;
+      color: $cp-color-accent-dark;
+    }
+
+    // Идёт загрузка core.js + core.css (первый клик).
+    // Stub добавляет класс сразу при клике, снимает после загрузки.
+    // pointer-events:none предотвращает повторный клик во время загрузки.
+    &--loading {
+      opacity: 0.6;
+      cursor: wait;
+      pointer-events: none;
+      @include loading-pulse;
+    }
+  }
+
+
+  // ── Попап ─────────────────────────────────────────────────
+  //
+  // position:fixed — JS задаёт top/left в window-координатах.
+  // display:flex + flex-direction:column — вкладки и поиск фиксированы,
+  // тело прокручивается.
+  //
+  // ВАЖНО: max-height обязателен — без него __body (flex:1 1 auto)
+  // не имеет высотной опоры и растягивается бесконечно или схлопывается.
+  &__popup {
+    position: fixed;       // координаты задаются JS через top/left
+    z-index: $cp-z-popup;
+    width: $cp-popup-width;
+    max-height: $cp-popup-max-height;
+    background: $cp-color-bg;
+    border: 1px solid $cp-color-border;
+    border-radius: $cp-border-radius;
+    box-shadow: $cp-shadow-popup;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: cp-fadein 0.15s ease;
+
+    // transform-origin для возможной анимации появления
+    &--pos-bottom { transform-origin: top left; }
+    &--pos-top    { transform-origin: bottom left; }
+
+    // Попап сдвинут к правому краю экрана (когда не помещается справа)
+    // !important перебивает left заданный JS
+    &--pos-right  { right: 0; left: auto !important; }
+  }
+
+
+  // ── Поиск ─────────────────────────────────────────────────
+  &__search {
+    padding: 8px 8px 6px;
+    border-bottom: 1px solid $cp-color-border-panel;
+    background: $cp-color-bg;
+    flex: 0 0 auto;  // не сжимается и не растягивается
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid $cp-color-border;
+    border-radius: $cp-border-radius-sm;
+    font-size: 13px;
+    color: $cp-color-text;
+    background: $cp-color-bg;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: $cp-color-border-focus;
+      box-shadow: 0 0 0 3px rgba($cp-color-accent, 0.15);
+    }
+
+    // Нативная кнопка очистки в WebKit
+    &::-webkit-search-cancel-button { cursor: pointer; }
+  }
+
+
+  // ── Вкладки ───────────────────────────────────────────────
+  //
+  // Горизонтально прокручиваются если групп много.
+  // cursor:grab намекает что можно тащить.
+  // JS переключает на 'grabbing' во время drag и подавляет клик
+  // если курсор переместился более чем на 4px (drag vs click).
+  &__tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid $cp-color-border-panel;
+    background: $cp-color-bg-panel;
+    flex: 0 0 auto;
+    cursor: grab;
+    @include hide-scrollbar;
+  }
+
+  &__tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: $cp-color-text-tab;
+    transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+    @include no-select;
+
+    &:hover { background: darken($cp-color-bg-panel, 4%); }
+
+    &:focus-visible {
+      outline: 2px solid $cp-color-accent;
+      outline-offset: -2px;
+    }
+
+    // Активная вкладка — акцентная полоска снизу
+    &--active {
+      border-bottom-color: $cp-color-accent;
+      background: $cp-color-bg;
+      color: $cp-color-text;
+    }
+  }
+
+
+  // ── Тело (прокручиваемая область с символами) ─────────────
+  //
+  // flex:1 1 auto — занимает всё доступное пространство попапа.
+  // min-height:0  — обязателен: без него Safari не обрезает содержимое
+  //                 по overflow:auto у flex-элемента.
+  &__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px;
+    @include thin-scrollbar;
+  }
+
+
+  // ── Заголовок секции ──────────────────────────────────────
+  // «Недавние», «Результаты: N», «Раскладка: N»
+  &__section-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: $cp-color-text-muted;
+    padding: 4px 4px 4px 6px;
+    margin-top: 2px;
+    @include no-select;
+  }
+
+  // ── Разделитель ───────────────────────────────────────────
+  // Горизонтальная черта между «Недавними» и основной группой
+  &__divider {
+    height: 1px;
+    background: $cp-color-divider;
+    margin: 4px 0 6px;
+  }
+
+
+  // ── Подгруппа ─────────────────────────────────────────────
+  &__subgroup {
+    margin-bottom: 4px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  // Заголовок подгруппы (например «Люди», «Природа» внутри группы)
+  &__subgroup-title {
+    //font-size: 10px;              // раскомментировать если нужен мелкий текст
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: $cp-color-subgroup-title;
+    padding: 6px 4px 3px 8px;
+    //border-left: 2px solid $cp-color-divider;  // боковая черта (по желанию)
+    //margin-left: 2px;
+    //margin-right: 2px;
+    @include no-select;
+  }
+
+
+  // ── Сетка символов ────────────────────────────────────────
+  &__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    padding: 2px;
+  }
+
+  // ── Один символ ───────────────────────────────────────────
+  &__char {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $cp-char-size;
+    height: $cp-char-size;
+    font-size: $cp-char-font-size;
+    line-height: 1;
+    border-radius: $cp-border-radius-sm;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.1s;
+    @include no-select;
+
+    &:hover  { background: $cp-color-bg-char-h; transform: scale(1.12); }
+    &:active { background: $cp-color-bg-char-act; transform: scale(1.0); }
+
+    &:focus-visible {
+      outline: 2px solid $cp-color-accent;
+      outline-offset: 1px;
+    }
+
+    // Не-эмодзи: математика, типографика, диакритика и т.п.
+    // JS добавляет этот класс если символ в диапазонах U+0000–U+00FF, U+2000–U+27FF.
+    // Serif-шрифт лучше отображает эти символы чем системный sans-serif.
+    &--sym {
+      font-size: $cp-char-font-size-sym;
+      font-family: $cp-font-sym;
+      color: $cp-color-text;
+    }
+  }
+
+
+  // ── Тултип ────────────────────────────────────────────────
+  //
+  // Элемент #jcp-tooltip — один на страницу, создаётся в JS.
+  // position:fixed — координаты clientX/Y задаются JS при mousemove.
+  //
+  // Жизненный цикл (управляется JS):
+  //   1. При создании:           display:none (не в потоке, ничего не перекрывает)
+  //   2. При наведении:          display:'' → rAF → добавляется --visible (fade-in)
+  //   3. При уходе курсора:      убирается --visible (fade-out) →
+  //                              через 150ms display:none
+  //   4. При закрытии диалога:   _hideTooltip() → display:none мгновенно
+  //
+  // pointer-events:none — тултип не перехватывает события мыши.
+  &__tooltip {
+    position: fixed;
+    z-index: $cp-z-tooltip;
+    background: $cp-color-tooltip-bg;
+    color: $cp-color-tooltip-text;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 4px 8px;
+    border-radius: $cp-border-radius-sm;
+    pointer-events: none;
+    white-space: nowrap;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity 0.1s;
+
+    // Видимое состояние — добавляется JS через rAF после display:''
+    &--visible { opacity: 1; }
+  }
+
+
+  // ── Состояния-заглушки ────────────────────────────────────
+
+  // «Ничего не найдено» / «Вы ещё не выбирали символы»
+  &__empty {
+    padding: 24px 12px;
+    text-align: center;
+    color: $cp-color-text-empty;
+    font-size: 13px;
+  }
+
+  // «Загрузка…» — пока грузится dataUrl JSON или само ядро
+  &__loading {
+    padding: 24px 12px;
+    text-align: center;
+    color: $cp-color-text-muted;
+    font-size: 13px;
+    @include loading-pulse;
+  }
+
+  // Подсказка о конвертации раскладки EN↔RU при поиске
+  // («ℹ️ Раскладка: «smajlik»»)
+  &__layout-hint {
+    font-size: 11px;
+    color: $cp-color-accent-dark;
+    padding: 3px 6px 4px;
+    margin-bottom: 3px;
+    background: rgba($cp-color-accent, 0.07);
+    border-radius: $cp-border-radius-sm;
+  }
+
+} // .jcp
