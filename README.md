@@ -1,4 +1,4 @@
-# jquery.charPicker v3
+# charPicker v3
 
 jQuery-плагин для вставки спецсимволов и эмодзи в поля `input` и `textarea`.
 
